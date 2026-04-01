@@ -25,6 +25,7 @@ linux:
     - rpm
   category: Development
   icon: public/icons/icon-512.png
+  maintainer: socrtwo@users.noreply.github.com
 nsis:
   oneClick: false
   allowToChangeInstallationDirectory: true
