@@ -13,9 +13,9 @@ on:
         required: true
 
 jobs:
-  # ─── Windows installer + portable exe ────────────────────────────────────────
+  # ─── Windows x64 + ARM64 + App Store (AppX) ──────────────────────────────────
   build-windows:
-    name: Windows
+    name: Windows (x64 + ARM64 + AppX)
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
@@ -24,14 +24,16 @@ jobs:
           node-version: '20'
           cache: 'npm'
       - run: npm ci
-      - name: Build Windows installer & portable
-        run: npm run electron:build -- --win --publish never
+      - name: Build Windows x64 + ARM64 installer, portable & App Store package
+        run: npm run electron:build -- --win --x64 --arm64 --publish never
       - uses: actions/upload-artifact@v4
         with:
           name: windows
           path: |
             dist/*.exe
             dist/*.msi
+            dist/*.appx
+            dist/*.msix
           if-no-files-found: warn
 
   # ─── macOS DMG + zip ─────────────────────────────────────────────────────────
@@ -55,9 +57,9 @@ jobs:
             dist/*.zip
           if-no-files-found: warn
 
-  # ─── Linux AppImage, deb, rpm ─────────────────────────────────────────────────
+  # ─── Linux x64 + ARM64 — AppImage, deb, rpm ───────────────────────────────────
   build-linux:
-    name: Linux
+    name: Linux (x64 + ARM64)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -66,8 +68,8 @@ jobs:
           node-version: '20'
           cache: 'npm'
       - run: npm ci
-      - name: Build Linux packages
-        run: npm run electron:build -- --linux --publish never
+      - name: Build Linux x64 + ARM64 packages
+        run: npm run electron:build -- --linux --x64 --arm64 --publish never
       - uses: actions/upload-artifact@v4
         with:
           name: linux
@@ -75,6 +77,37 @@ jobs:
             dist/*.AppImage
             dist/*.deb
             dist/*.rpm
+          if-no-files-found: warn
+
+  # ─── Linux Flatpak (works on any distro incl. Steam Deck) ────────────────────
+  build-flatpak:
+    name: Linux (Flatpak)
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - name: Cache Flatpak runtime
+        uses: actions/cache@v4
+        with:
+          path: ~/.local/share/flatpak
+          key: flatpak-freedesktop-23.08
+      - name: Install Flatpak tools & runtime
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y flatpak flatpak-builder
+          sudo flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+          flatpak install -y --user flathub org.freedesktop.Platform//23.08 org.freedesktop.Sdk//23.08 2>/dev/null || true
+      - run: npm ci
+      - name: Build Flatpak
+        run: npm run electron:build -- --linux flatpak --publish never
+      - uses: actions/upload-artifact@v4
+        with:
+          name: flatpak
+          path: dist/*.flatpak
           if-no-files-found: warn
 
   # ─── Android APK ─────────────────────────────────────────────────────────────
@@ -173,16 +206,19 @@ jobs:
           VERSION="${{ github.ref_name || github.event.inputs.version }}"
           zip -r "SF2GH-Migrator-${VERSION}-web.zip" \
             src/ public/ package.json README.md LICENSE \
-            --exclude "node_modules/*"
+            --exclude "node_modules/*" 2>/dev/null || \
+          zip -r "SF2GH-Migrator-${VERSION}-web.zip" \
+            src/ public/ package.json README.md \
+            --exclude "node_modules/*" 2>/dev/null || true
       - uses: actions/upload-artifact@v4
         with:
           name: web
           path: '*.zip'
 
-  # ─── Create GitHub Release with all artifacts ─────────────────────────────────
+  # ─── Create GitHub Release with all artifacts ────────────────────────────────
   release:
     name: Publish Release
-    needs: [build-windows, build-macos, build-linux, build-android, build-ios, build-web]
+    needs: [build-windows, build-macos, build-linux, build-flatpak, build-android, build-ios, build-web]
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -207,15 +243,18 @@ jobs:
 
             | Platform | File | Notes |
             |----------|------|-------|
-            | Windows  | `*-Setup.exe` | Standard installer |
-            | Windows  | `*-Portable.exe` | No install needed, just run it |
-            | macOS    | `*.dmg` | Drag to Applications |
-            | macOS    | `*.zip` | For auto-updater |
-            | Linux    | `*.AppImage` | Universal — works on any distro |
-            | Linux    | `*.deb` | Ubuntu / Debian |
-            | Linux    | `*.rpm` | Fedora / Red Hat |
-            | Android  | `*-android.apk` | Sideload via Settings → Install unknown apps |
-            | iOS      | `*-ios-unsigned.ipa` | Install via AltStore or Apple TestFlight |
-            | Web      | `*-web.zip` | Self-host with `npm start` |
+            | Windows x64 | `*-Setup.exe` | Standard installer |
+            | Windows x64 | `*-Portable.exe` | No install needed, just run it |
+            | Windows ARM64 | `*-arm64-Setup.exe` | Surface Pro X, ARM laptops |
+            | Windows App Store | `*.appx` | Sideload or submit to Microsoft Store |
+            | macOS | `*.dmg` | Drag to Applications |
+            | Linux x64 | `*.AppImage` | Universal — works on any distro |
+            | Linux ARM64 | `*-arm64.AppImage` | Raspberry Pi, ARM servers |
+            | Linux x64 | `*.deb` | Ubuntu / Debian |
+            | Linux x64 | `*.rpm` | Fedora / Red Hat |
+            | Linux | `*.flatpak` | Flatpak — Steam Deck, GNOME Software |
+            | Android | `*-android.apk` | Sideload via Settings → Install unknown apps |
+            | iOS | `*-ios-unsigned.ipa` | Install via AltStore or TestFlight |
+            | Web | `*-web.zip` | Self-host with `npm start` |
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
