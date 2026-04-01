@@ -94,6 +94,8 @@ jobs:
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
       - run: npm ci
+      - name: Install Capacitor Android platform
+        run: npm install @capacitor/android
       - name: Initialize Capacitor Android project
         run: |
           npx cap add android 2>/dev/null || true
@@ -122,6 +124,8 @@ jobs:
           node-version: '20'
           cache: 'npm'
       - run: npm ci
+      - name: Install Capacitor iOS platform
+        run: npm install @capacitor/ios
       - name: Initialize Capacitor iOS project
         run: |
           npx cap add ios 2>/dev/null || true
