@@ -57,7 +57,8 @@ window.MobileMigrate = (function () {
   }
 
   function getGitUrl(projectName) {
-    return 'https://git.code.sf.net/p/' + projectName + '/code';
+    // encodeURIComponent handles any residual spaces or special chars safely
+    return 'https://git.code.sf.net/p/' + encodeURIComponent(projectName) + '/code';
   }
 
   // ─── Repo Name Sanitization ───────────────────────────────────────────────
@@ -432,13 +433,25 @@ window.MobileMigrate = (function () {
     const addList = function (list) {
       if (!Array.isArray(list)) return;
       list.forEach(function (p) {
-        var shortname = p.shortname || p.unix_name || p.name;
+        // The Allura API often omits shortname/unix_name but includes the
+        // canonical project URL.  Extract the slug from that URL first,
+        // then fall back to explicit fields, then slugify the display name.
+        var shortname = p.shortname || p.unix_name || p.id;
+        if (!shortname && p.url) {
+          var m = String(p.url).match(/sourceforge\.net\/p(?:rojects?)?\/([^/?#\s]+)/i);
+          if (m) shortname = decodeURIComponent(m[1]);
+        }
+        if (!shortname && p.name) {
+          // Last resort: slugify display name  (lower-case, strip non-alnum)
+          shortname = p.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+        }
         if (!shortname || seen.has(shortname)) return;
         seen.add(shortname);
         repos.push({
           name: p.name || shortname,
           shortname: shortname,
-          sfProjectUrl: 'https://sourceforge.net/projects/' + shortname + '/',
+          // Prefer API-provided canonical URL; fall back to constructed one
+          sfProjectUrl: p.url || ('https://sourceforge.net/projects/' + shortname + '/'),
         });
       });
     };

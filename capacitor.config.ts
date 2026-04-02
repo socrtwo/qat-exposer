@@ -19,6 +19,12 @@ const config: CapacitorConfig = {
       launchShowDuration: 2000,
       backgroundColor: '#0d1117',
     },
+    // Patch window.fetch and XMLHttpRequest on iOS/Android to use native HTTP.
+    // This bypasses WebView CORS restrictions for ALL requests, including
+    // isomorphic-git clone/push and direct SourceForge API calls.
+    CapacitorHttp: {
+      enabled: true,
+    },
   },
 };
 
