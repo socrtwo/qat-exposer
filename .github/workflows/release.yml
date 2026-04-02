@@ -12,6 +12,12 @@ on:
         description: 'Version tag to release (e.g. v1.0.0)'
         required: true
 
+# Opt into Node.js 24 for all action runners (checkout, setup-node, upload-artifact, etc.)
+# GitHub is deprecating Node.js 20 on June 2 2026 and removing it September 16 2026.
+# This env var silences the deprecation warning and ensures forward compatibility.
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
   # ─── Windows installer + portable exe ────────────────────────────────────────
   build-windows:
