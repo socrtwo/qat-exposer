@@ -447,11 +447,15 @@ window.MobileMigrate = (function () {
         }
         if (!shortname || seen.has(shortname)) return;
         seen.add(shortname);
+        // p.url from the Allura API is often a relative path like /p/slug/ —
+        // convert to an absolute URL before storing.
+        var canonicalUrl = p.url
+          ? (String(p.url).startsWith('/') ? 'https://sourceforge.net' + p.url : String(p.url))
+          : null;
         repos.push({
           name: p.name || shortname,
           shortname: shortname,
-          // Prefer API-provided canonical URL; fall back to constructed one
-          sfProjectUrl: p.url || ('https://sourceforge.net/projects/' + shortname + '/'),
+          sfProjectUrl: canonicalUrl || ('https://sourceforge.net/p/' + shortname + '/'),
         });
       });
     };

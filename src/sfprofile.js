@@ -84,10 +84,14 @@ function extractRepos(profileData) {
       }
       if (!shortname || seen.has(shortname)) continue;
       seen.add(shortname);
+      // p.url from the Allura API is often a relative path like /p/slug/
+      const canonicalUrl = p.url
+        ? (String(p.url).startsWith('/') ? 'https://sourceforge.net' + p.url : String(p.url))
+        : null;
       repos.push({
         name: p.name || shortname,
         shortname: shortname,
-        sfProjectUrl: p.url || ('https://sourceforge.net/projects/' + shortname + '/'),
+        sfProjectUrl: canonicalUrl || ('https://sourceforge.net/p/' + shortname + '/'),
       });
     }
   };
