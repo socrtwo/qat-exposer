@@ -56,13 +56,16 @@ window.MobileMigrate = (function () {
     throw new Error('Unrecognized SourceForge URL: ' + rawUrl);
   }
 
-  function getGitUrl(projectName) {
-    // encodeURIComponent handles any residual spaces or special chars safely
-    return 'https://git.code.sf.net/p/' + encodeURIComponent(projectName) + '/code';
+  function getGitUrl(projectName, sfUsername) {
+    // SourceForge HTTPS clone URLs include the username for authentication:
+    //   https://USERNAME@git.code.sf.net/p/PROJECT/code
+    var user = sfUsername ? encodeURIComponent(sfUsername) + '@' : '';
+    return 'https://' + user + 'git.code.sf.net/p/' + encodeURIComponent(projectName) + '/code';
   }
 
-  function getSshGitUrl(projectName) {
-    return 'ssh://git.code.sf.net/p/' + encodeURIComponent(projectName) + '/code';
+  function getSshGitUrl(projectName, sfUsername) {
+    var user = sfUsername ? encodeURIComponent(sfUsername) + '@' : '';
+    return 'ssh://' + user + 'git.code.sf.net/p/' + encodeURIComponent(projectName) + '/code';
   }
 
   // ─── SourceForge Git Repo Pre-flight Check ───────────────────────────────
@@ -509,7 +512,8 @@ window.MobileMigrate = (function () {
       };
     }
 
-    const gitUrl = getGitUrl(parsed.projectName);
+    var sfUser = options.sfUsername || '';
+    const gitUrl = getGitUrl(parsed.projectName, sfUser);
     const scmLabel = parsed.scmType === 'git-assumed' ? 'git (assumed from URL)' : 'git';
 
     return {
@@ -613,7 +617,8 @@ window.MobileMigrate = (function () {
 
         // ── Step 2: Clone from SourceForge ────────────────────────────
         log('  [2/4] Cloning from SourceForge...');
-        var gitUrl = getGitUrl(projectName);
+        var sfUser = options.sfUsername || '';
+        var gitUrl = getGitUrl(projectName, sfUser);
 
         var result = await migrateGitRepo(
           gitUrl,

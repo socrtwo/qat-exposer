@@ -245,7 +245,12 @@
       var completed = 0;
       urls.forEach(function (url, i) {
         var owner = orgInput.value.trim() || undefined;
-        window.MobileMigrate.planMigration(url, { owner: owner })
+        var sfU = sfProfileInput.value.trim();
+        if (sfU && sfU.indexOf('/') !== -1) {
+          var mu = sfU.match(/(?:u(?:sers?)?|p)\/([^/?#\s]+)/i);
+          if (mu) sfU = mu[1];
+        }
+        window.MobileMigrate.planMigration(url, { owner: owner, sfUsername: sfU || undefined })
           .then(function (plan) {
             log('', 'log-info');
             log('[' + (i + 1) + '/' + urls.length + '] ' + url, 'log-step');
@@ -335,9 +340,16 @@
     btnDryRun.disabled = true;
 
     if (useClientSide() && window.MobileMigrate) {
+      // Extract SF username from the profile input for HTTPS clone URLs
+      var sfUser = sfProfileInput.value.trim();
+      if (sfUser && sfUser.indexOf('/') !== -1) {
+        var m = sfUser.match(/(?:u(?:sers?)?|p)\/([^/?#\s]+)/i);
+        if (m) sfUser = m[1];
+      }
       var options = {
         org: orgInput.value.trim() || undefined,
         isPrivate: privateCheck.checked,
+        sfUsername: sfUser || undefined,
       };
 
       window.MobileMigrate.migrateBatch(urls, token, options, function (msg) {
