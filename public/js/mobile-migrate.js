@@ -153,6 +153,21 @@ window.MobileMigrate = (function () {
 
   // ─── Git Migration via isomorphic-git ────────────────────────────────────
 
+  // Detect whether we're running inside a Capacitor native shell.
+  // CapacitorHttp patches window.fetch to bypass CORS on native platforms,
+  // so we only need the CORS proxy when running in a plain browser.
+  function needsCorsProxy() {
+    return !(window.Capacitor && window.Capacitor.isNativePlatform &&
+             window.Capacitor.isNativePlatform());
+  }
+
+  // Public CORS proxy for isomorphic-git when running in a browser.
+  // SourceForge's git.code.sf.net does not send CORS headers, so browser-based
+  // clones fail without a proxy.  The proxy is NOT used on native Capacitor
+  // builds (CapacitorHttp handles it) or when the Express backend is available
+  // (the server uses native git, not isomorphic-git).
+  var CORS_PROXY = 'https://cors.isomorphic-git.org';
+
   async function migrateGitRepo(sourceUrl, token, owner, repoName, isPrivate, log) {
     const { git, LightningFS, http } = getGitLibs();
 
@@ -173,9 +188,10 @@ window.MobileMigrate = (function () {
     }
 
     // Step 2: Clone from SourceForge (all branches + tags)
-    log('Cloning from ' + sourceUrl + ' ...');
+    var useCorsProxy = needsCorsProxy();
+    log('Cloning from ' + sourceUrl + (useCorsProxy ? ' (via CORS proxy)' : '') + ' ...');
     log('(Large repositories may take several minutes)');
-    await git.clone({
+    var cloneOpts = {
       fs: fs,
       http: http,
       dir: dir,
@@ -192,7 +208,11 @@ window.MobileMigrate = (function () {
         var trimmed = msg.trim();
         if (trimmed) log('[remote] ' + trimmed);
       },
-    });
+    };
+    if (useCorsProxy) {
+      cloneOpts.corsProxy = CORS_PROXY;
+    }
+    await git.clone(cloneOpts);
     log('Clone complete.');
 
     // Step 3: Discover all local branches and tags
@@ -365,8 +385,15 @@ window.MobileMigrate = (function () {
 
       } catch (err) {
         var msg = err.message || String(err);
-        // 404 on git clone almost always means the project uses SVN, not git
-        if (msg.indexOf('404') !== -1 || msg.indexOf('Not Found') !== -1) {
+        // Distinguish CORS / network errors from actual 404s
+        var isCors = msg.indexOf('CORS') !== -1 || msg.indexOf('Failed to fetch') !== -1 ||
+                     msg.indexOf('NetworkError') !== -1 || msg.indexOf('TypeError') !== -1 ||
+                     msg.indexOf('Load failed') !== -1;
+        if (isCors) {
+          log('  Clone failed — likely a CORS issue (SourceForge blocks browser git requests).');
+          log('  Tip: Use the desktop app, native mobile app (APK/IPA), or self-host the web server.');
+          results.push({ success: false, sourceUrl: rawUrl, error: 'CORS blocked — use desktop or native app' });
+        } else if (msg.indexOf('404') !== -1 || msg.indexOf('Not Found') !== -1) {
           log('  Git repository not found (404). This project likely uses SVN.');
           log('  SVN migration requires the desktop app — skipping.');
           results.push({ success: false, sourceUrl: rawUrl, error: 'SVN project (git 404) — use desktop app' });
