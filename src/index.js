@@ -137,10 +137,29 @@ app.get('*', (_req, res) => {
 });
 
 // Start server (only when run directly, not when imported for testing)
-const PORT = process.env.PORT || 3000;
+const PREFERRED_PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
+const MAX_PORT_ATTEMPTS = 10;
+
+function tryListen(port, attempt) {
+  return new Promise((resolve, reject) => {
+    const srv = app.listen(port, () => resolve({ srv, port }));
+    srv.on('error', (err) => {
+      if (err.code === 'EADDRINUSE' && attempt < MAX_PORT_ATTEMPTS) {
+        srv.close();
+        resolve(tryListen(port + 1, attempt + 1));
+      } else {
+        reject(err);
+      }
+    });
+  });
+}
+
 if (require.main === module) {
-  app.listen(PORT, () => {
-    logger.info(`SF2GH Migrator running on http://localhost:${PORT}`);
+  tryListen(PREFERRED_PORT, 1).then(({ port }) => {
+    logger.info(`SF2GH Migrator running on http://localhost:${port}`);
+  }).catch((err) => {
+    logger.error(`Failed to start server: ${err.message}`);
+    process.exit(1);
   });
 }
 
