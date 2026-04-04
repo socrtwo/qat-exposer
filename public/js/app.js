@@ -96,6 +96,8 @@
   }
   tokenInput.addEventListener('input', updateButtons);
   urlsInput.addEventListener('input', updateButtons);
+  // Run once on load in case fields are pre-populated
+  updateButtons();
 
   // ─── Profile Lookup ───────────────────────────────────────────────────────
 
@@ -203,7 +205,12 @@
       return;
     }
 
-    fetch('/api/health')
+    var controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
+    var timeoutId = setTimeout(function () {
+      if (controller) controller.abort();
+    }, 3000);
+
+    fetch('/api/health', controller ? { signal: controller.signal } : {})
       .then(function (res) { return res.json(); })
       .then(function (data) {
         clientSideMode = false;
@@ -217,6 +224,9 @@
           clientSideMode = false;
           setStatus('offline', 'Server offline');
         }
+      })
+      .finally(function () {
+        clearTimeout(timeoutId);
       });
   }
   checkHealth();
