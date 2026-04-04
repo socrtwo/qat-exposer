@@ -376,17 +376,11 @@
     var urls = getUrls();
     if (urls.length === 0) return;
 
-    var hasNative = !!(window.Capacitor && window.Capacitor.isNativePlatform &&
-                       window.Capacitor.isNativePlatform());
-
-    // In browser-only mode (no server, no native app), Step 2 can't work
-    if (useClientSide() && !hasNative) {
-      alert('Step 2 (Populate Code Tabs) requires the desktop app, web server, or native mobile app (APK).\n\nIn Browser Mode, this step cannot run because it needs native git to push files to SourceForge.\n\nEither:\n- Run the app with "npm start" on a computer\n- Use the Electron desktop app\n- Use the Android APK\n- Skip to Step 3/4 if your Code tabs already have content');
+    // Step 2 requires either a server or MobileMigrate (isomorphic-git)
+    if (useClientSide() && !window.MobileMigrate) {
+      alert('Step 2 (Populate Code Tabs) requires an internet connection to load the git engine.\n\nPlease reload the page and try again.');
       return;
     }
-
-    // Check if NativeGit plugin is actually available
-    var hasNativeGit = hasNative && window.Capacitor.Plugins && window.Capacitor.Plugins.NativeGit;
 
     var sfUser = getSfUsername();
     if (!sfUser) {
@@ -409,38 +403,18 @@
         log('', 'log-info');
         log('[' + (i + 1) + '/' + urls.length + '] ' + projectName, 'log-step');
 
-        if (hasNativeGit) {
-          // Native path: use JGit plugin to download, init, commit, push
-          var ng = window.Capacitor.Plugins.NativeGit;
-          var pushUrl = 'https://' + encodeURIComponent(sfUser) + '@git.code.sf.net/p/' + encodeURIComponent(projectName) + '/code';
-          var dirName = 'sf2gh-populate-' + projectName + '-' + Date.now();
-          log('  Downloading files and pushing to SF Code tab (native)...', 'log-info');
-          // For now, create a README and push it to establish the Code tab
-          return ng.downloadFile({
-            url: 'https://sourceforge.net/projects/' + encodeURIComponent(projectName) + '/',
-            dir: dirName,
-            fileName: 'README.md',
-          }).then(function () {
-            return ng.initCommitPush({
-              dir: dirName,
-              remoteUrl: pushUrl,
-              message: 'Import from SourceForge Files section via SF2GH Migrator',
-            });
-          }).then(function () {
-            log('  Populated Code tab via native git', 'log-success');
-            return ng.cleanup({ dir: dirName });
+        // On native mobile or browser with MobileMigrate, use isomorphic-git
+        // (CapacitorHttp patches fetch to bypass CORS on native)
+        if (useClientSide() && window.MobileMigrate) {
+          return window.MobileMigrate.populateCodeTab(projectName, sfUser, function (msg) {
+            log('  ' + msg, 'log-info');
+          }).then(function (result) {
+            if (result && result.success) {
+              log('  Populated with ' + result.filesCount + ' file(s)', 'log-success');
+            }
           }).catch(function (err) {
-            log('  Native populate failed: ' + (err.message || err), 'log-warn');
-            try { ng.cleanup({ dir: dirName }); } catch (_) {}
+            log('  Populate failed: ' + (err.message || err), 'log-warn');
           });
-        }
-
-        if (hasNative && !hasNativeGit) {
-          // Native Capacitor app but NativeGit plugin not available —
-          // can't do git init/push without it. Tell the user.
-          log('  NativeGit plugin not loaded — cannot populate from mobile.', 'log-warn');
-          log('  Your Code tabs may need content added manually or via desktop.', 'log-warn');
-          return Promise.resolve();
         }
 
         // Server path (Electron / npm start)

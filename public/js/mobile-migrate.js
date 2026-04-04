@@ -171,6 +171,97 @@ window.MobileMigrate = (function () {
     }
   }
 
+  // ─── Populate SF Code Tab (isomorphic-git, works on mobile) ──────────────
+  // Downloads files from SF Files section, creates a git repo in IndexedDB,
+  // commits them, and pushes to the SF Code tab via HTTPS.
+
+  async function populateCodeTab(projectName, sfUsername, log) {
+    var { git, LightningFS, http } = getGitLibs();
+
+    log('Listing files in SF Files section...');
+    var sfFiles = await downloadSFFileList(projectName);
+
+    // Create a fresh filesystem for this operation
+    var fsName = 'sf2gh-populate-' + projectName + '-' + Date.now();
+    var pfs = new LightningFS(fsName);
+    var dir = '/populate';
+
+    // Init a new repo
+    await git.init({ fs: pfs, dir: dir, defaultBranch: 'main' });
+
+    if (sfFiles.length > 0) {
+      log('Found ' + sfFiles.length + ' file(s). Downloading...');
+      // Download up to 10 files (skip large binaries)
+      var downloaded = 0;
+      for (var fi = 0; fi < sfFiles.length && downloaded < 10; fi++) {
+        var f = sfFiles[fi];
+        var lower = f.name.toLowerCase();
+        // Skip obvious binaries
+        if (/\.(exe|msi|dmg|rpm|deb|apk|ipa|appimage)$/i.test(lower)) continue;
+
+        log('  Downloading: ' + f.name);
+        try {
+          var resp = await fetch(f.url, {
+            headers: { 'User-Agent': 'SF2GH-Migrator/1.0' },
+            redirect: 'follow',
+          });
+          if (resp.ok) {
+            var content = await resp.arrayBuffer();
+            await pfs.promises.writeFile(dir + '/' + f.name, new Uint8Array(content));
+            downloaded++;
+          }
+        } catch (dlErr) {
+          log('  Warning: could not download ' + f.name);
+        }
+      }
+      if (downloaded === 0) {
+        // No files downloaded — create a README
+        log('  No files could be downloaded. Creating README...');
+        await pfs.promises.writeFile(dir + '/README.md',
+          '# ' + projectName + '\n\nMigrated from SourceForge via SF2GH Migrator.\n');
+      }
+    } else {
+      log('No files in Files section. Creating README...');
+      await pfs.promises.writeFile(dir + '/README.md',
+        '# ' + projectName + '\n\nMigrated from SourceForge via SF2GH Migrator.\n');
+    }
+
+    // Stage all files
+    var files = await pfs.promises.readdir(dir);
+    for (var ai = 0; ai < files.length; ai++) {
+      if (files[ai] === '.git') continue;
+      await git.add({ fs: pfs, dir: dir, filepath: files[ai] });
+    }
+
+    // Commit
+    log('Committing...');
+    await git.commit({
+      fs: pfs,
+      dir: dir,
+      message: 'Import files from SourceForge Files section\n\nPopulated via SF2GH Migrator',
+      author: { name: 'SF2GH Migrator', email: 'sf2gh@localhost' },
+    });
+
+    // Push to SF Code tab via HTTPS
+    var pushUrl = 'https://' + encodeURIComponent(sfUsername) + '@git.code.sf.net/p/' + encodeURIComponent(projectName) + '/code';
+    log('Pushing to SF Code tab...');
+    await git.push({
+      fs: pfs,
+      http: http,
+      dir: dir,
+      url: pushUrl,
+      ref: 'main',
+      remoteRef: 'main',
+      force: true,
+      onAuth: function () {
+        return { username: sfUsername, password: '' };
+      },
+    });
+
+    log('Code tab populated!');
+    return { success: true, filesCount: files.length - 1 }; // -1 for .git
+  }
+
   // ─── Repo Name Sanitization ───────────────────────────────────────────────
 
   function sanitizeRepoName(name) {
@@ -811,6 +902,7 @@ window.MobileMigrate = (function () {
     planMigration: planMigration,
     migrateBatch: migrateBatch,
     lookupProfile: lookupProfile,
+    populateCodeTab: populateCodeTab,
   };
 
 })();
