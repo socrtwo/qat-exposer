@@ -367,13 +367,16 @@
     if (urls.length === 0) return;
 
     var hasNative = !!(window.Capacitor && window.Capacitor.isNativePlatform &&
-                       window.Capacitor.isNativePlatform() &&
-                       window.Capacitor.Plugins && window.Capacitor.Plugins.NativeGit);
+                       window.Capacitor.isNativePlatform());
 
+    // In browser-only mode (no server, no native app), Step 2 can't work
     if (useClientSide() && !hasNative) {
       alert('Step 2 (Populate Code Tabs) requires the desktop app, web server, or native mobile app (APK).\n\nIn Browser Mode, this step cannot run because it needs native git to push files to SourceForge.\n\nEither:\n- Run the app with "npm start" on a computer\n- Use the Electron desktop app\n- Use the Android APK\n- Skip to Step 3/4 if your Code tabs already have content');
       return;
     }
+
+    // Check if NativeGit plugin is actually available
+    var hasNativeGit = hasNative && window.Capacitor.Plugins && window.Capacitor.Plugins.NativeGit;
 
     var sfUser = getSfUsername();
     if (!sfUser) {
@@ -396,7 +399,7 @@
         log('', 'log-info');
         log('[' + (i + 1) + '/' + urls.length + '] ' + projectName, 'log-step');
 
-        if (hasNative) {
+        if (hasNativeGit) {
           // Native path: use JGit plugin to download, init, commit, push
           var ng = window.Capacitor.Plugins.NativeGit;
           var pushUrl = 'https://' + encodeURIComponent(sfUser) + '@git.code.sf.net/p/' + encodeURIComponent(projectName) + '/code';
@@ -422,7 +425,15 @@
           });
         }
 
-        // Server path
+        if (hasNative && !hasNativeGit) {
+          // Native Capacitor app but NativeGit plugin not available —
+          // can't do git init/push without it. Tell the user.
+          log('  NativeGit plugin not loaded — cannot populate from mobile.', 'log-warn');
+          log('  Your Code tabs may need content added manually or via desktop.', 'log-warn');
+          return Promise.resolve();
+        }
+
+        // Server path (Electron / npm start)
         return apiPost('/api/sf-populate', { projectName: projectName, sfUsername: sfUser })
           .then(function (result) {
             if (result.ok && result.data.success) {
