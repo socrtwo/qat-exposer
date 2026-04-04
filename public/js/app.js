@@ -279,28 +279,11 @@
         projectName = sfMatch ? sfMatch[1] : url;
       } catch (_) { projectName = url; }
 
-      // Use the client-side check if available
-      if (useClientSide() && window.MobileMigrate) {
-        // Client-side check via REST API
-        var checkUrl = 'https://sourceforge.net/rest/p/' + encodeURIComponent(projectName) + '/code/';
-        fetch(checkUrl, { headers: { 'Accept': 'application/json' } })
-          .then(function (res) {
-            if (res.ok) {
-              log('[' + (i + 1) + '/' + urls.length + '] ' + projectName + ' — Code tab exists', 'log-success');
-            } else {
-              allHaveCode = false;
-              missingTabs.push(projectName);
-              log('[' + (i + 1) + '/' + urls.length + '] ' + projectName + ' — No Code tab', 'log-error');
-            }
-          })
-          .catch(function () {
-            allHaveCode = false;
-            missingTabs.push(projectName);
-            log('[' + (i + 1) + '/' + urls.length + '] ' + projectName + ' — Could not check', 'log-warn');
-          })
-          .finally(finishCheck);
-      } else {
-        apiPost('/api/detect', { url: url })
+      // Always check via SourceForge REST API directly (works in all modes)
+      var checkFn;
+      if (!useClientSide()) {
+        // Server mode: use our backend API
+        checkFn = apiPost('/api/detect', { url: url })
           .then(function (result) {
             if (result.ok && result.data.scmType !== 'unknown') {
               log('[' + (i + 1) + '/' + urls.length + '] ' + projectName + ' — ' + result.data.scmType.toUpperCase() + ' repo found', 'log-success');
@@ -309,14 +292,35 @@
               missingTabs.push(projectName);
               log('[' + (i + 1) + '/' + urls.length + '] ' + projectName + ' — No Code tab found', 'log-error');
             }
-          })
-          .catch(function () {
-            allHaveCode = false;
-            missingTabs.push(projectName);
-            log('[' + (i + 1) + '/' + urls.length + '] ' + projectName + ' — Check failed', 'log-warn');
-          })
-          .finally(finishCheck);
+          });
+      } else if (window.MobileMigrate) {
+        // Browser/mobile mode: check via SF REST API
+        var checkUrl = 'https://sourceforge.net/rest/p/' + encodeURIComponent(projectName) + '/code/';
+        checkFn = fetch(checkUrl, { headers: { 'Accept': 'application/json' } })
+          .then(function (res) {
+            if (res.ok) {
+              log('[' + (i + 1) + '/' + urls.length + '] ' + projectName + ' — Code tab exists', 'log-success');
+            } else {
+              allHaveCode = false;
+              missingTabs.push(projectName);
+              log('[' + (i + 1) + '/' + urls.length + '] ' + projectName + ' — No Code tab', 'log-error');
+            }
+          });
+      } else {
+        checkFn = Promise.resolve().then(function () {
+          allHaveCode = false;
+          missingTabs.push(projectName);
+          log('[' + (i + 1) + '/' + urls.length + '] ' + projectName + ' — Cannot check (no server)', 'log-warn');
+        });
       }
+
+      checkFn
+        .catch(function () {
+          allHaveCode = false;
+          missingTabs.push(projectName);
+          log('[' + (i + 1) + '/' + urls.length + '] ' + projectName + ' — Could not check', 'log-warn');
+        })
+        .finally(finishCheck);
 
       function finishCheck() {
         completed++;
@@ -361,6 +365,12 @@
   btnPopulateCode.addEventListener('click', function () {
     var urls = getUrls();
     if (urls.length === 0) return;
+
+    if (useClientSide()) {
+      alert('Step 2 (Populate Code Tabs) requires the desktop app or web server.\n\nIn Browser Mode, this step cannot run because it needs native git to push files to SourceForge.\n\nEither:\n- Run the app with "npm start" on a computer\n- Use the Electron desktop app\n- Skip to Step 3/4 if your Code tabs already have content');
+      return;
+    }
+
     var sfUser = getSfUsername();
     if (!sfUser) {
       alert('Enter your SourceForge username in the "Find by SourceForge Profile" field first.');
