@@ -54,26 +54,44 @@ function run(cmd, opts = {}) {
 }
 
 /**
- * Download a file from SourceForge using curl.
- * curl handles SF's complex JavaScript/meta-refresh redirects properly.
+ * Download a file from SourceForge using a two-step approach:
+ * 1. Fetch the download page HTML to extract the direct mirror URL
+ * 2. Download the actual file from the mirror
  * Returns a Buffer of the file content.
  */
 function downloadFromSF(sfProject, sfFile) {
-  const url = `https://sourceforge.net/projects/${sfProject}/files/${encodeURIComponent(sfFile)}/download`;
+  const pageUrl = `https://sourceforge.net/projects/${sfProject}/files/${encodeURIComponent(sfFile)}/download`;
   console.log('  Downloading from SF: ' + sfFile);
 
+  const tmpPage = path.join(os.tmpdir(), 'sf-page-' + Date.now() + '.html');
   const tmpFile = path.join(os.tmpdir(), 'sf-dl-' + Date.now() + '.bin');
+
   try {
-    run(`curl -L -o "${tmpFile}" -A "Mozilla/5.0" --max-redirs 15 --connect-timeout 30 --max-time 120 "${url}"`,
-        { timeout: 180000 });
+    // Step 1: Get the download page HTML
+    run(`curl -s -o "${tmpPage}" -A "Mozilla/5.0" "${pageUrl}"`, { timeout: 30000 });
+    const html = fs.readFileSync(tmpPage, 'utf8');
+
+    // Step 2: Extract the direct downloads.sourceforge.net URL
+    const match = html.match(/https:\/\/downloads\.sourceforge\.net\/[^"&]+/);
+    if (!match) {
+      throw new Error('Could not find direct download URL in SF page');
+    }
+    const directUrl = match[0].replace(/&amp;/g, '&');
+    console.log('  Found mirror URL, downloading...');
+
+    // Step 3: Download the actual file from the mirror
+    run(`curl -L -o "${tmpFile}" -A "Mozilla/5.0" --max-redirs 10 --connect-timeout 30 --max-time 300 "${directUrl}"`,
+        { timeout: 360000 });
+
     if (!fs.existsSync(tmpFile)) {
       throw new Error('Download produced no file');
     }
     const buf = fs.readFileSync(tmpFile);
     return Promise.resolve(buf);
   } catch (err) {
-    return Promise.reject(new Error('curl download failed: ' + err.message.split('\n')[0]));
+    return Promise.reject(new Error('SF download failed: ' + err.message.split('\n')[0]));
   } finally {
+    try { fs.unlinkSync(tmpPage); } catch (_) {}
     try { fs.unlinkSync(tmpFile); } catch (_) {}
   }
 }
