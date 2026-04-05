@@ -19,8 +19,7 @@ const { execSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
 const os = require('os');
-const https = require('https');
-const http = require('http');
+// Uses curl for downloads (handles SourceForge's complex redirects)
 
 const TOKEN = process.env.GITHUB_TOKEN;
 const OWNER = process.env.GITHUB_OWNER || 'socrtwo';
@@ -55,69 +54,28 @@ function run(cmd, opts = {}) {
 }
 
 /**
- * Download a file following redirects (SourceForge uses many).
+ * Download a file from SourceForge using curl.
+ * curl handles SF's complex JavaScript/meta-refresh redirects properly.
  * Returns a Buffer of the file content.
  */
 function downloadFromSF(sfProject, sfFile) {
-  // SourceForge direct download URL format
   const url = `https://sourceforge.net/projects/${sfProject}/files/${encodeURIComponent(sfFile)}/download`;
   console.log('  Downloading from SF: ' + sfFile);
-  return followRedirects(url, 15);
-}
 
-function followRedirects(url, maxRedirects) {
-  return new Promise((resolve, reject) => {
-    if (maxRedirects <= 0) return reject(new Error('Too many redirects'));
-    const mod = url.startsWith('https') ? https : http;
-    const req = mod.get(url, {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (compatible; SF2GH-Migrator/1.0)',
-        'Accept': '*/*',
-      },
-      timeout: 60000,
-    }, (res) => {
-      // Follow redirects
-      if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
-        let next = res.headers.location;
-        if (next.startsWith('/')) {
-          const parsed = new URL(url);
-          next = parsed.protocol + '//' + parsed.host + next;
-        }
-        res.resume();
-        return resolve(followRedirects(next, maxRedirects - 1));
-      }
-      if (res.statusCode !== 200) {
-        res.resume();
-        return reject(new Error(`HTTP ${res.statusCode}`));
-      }
-      // Check content type — if it's HTML, we got a mirror page not the file
-      const ct = (res.headers['content-type'] || '').toLowerCase();
-      if (ct.includes('text/html')) {
-        // Consume the HTML and look for the actual download link
-        let html = '';
-        res.on('data', (d) => { html += d; });
-        res.on('end', () => {
-          // SF mirror pages have a direct link in a meta refresh or JS redirect
-          const match = html.match(/https?:\/\/[^"'\s]+\/download[^"'\s]*/i) ||
-                        html.match(/url=([^"'\s;]+)/i);
-          if (match) {
-            const directUrl = match[1] || match[0];
-            console.log('  Following mirror redirect...');
-            resolve(followRedirects(directUrl, maxRedirects - 1));
-          } else {
-            reject(new Error('Got HTML instead of file — download redirect failed'));
-          }
-        });
-        return;
-      }
-      // Collect the binary data
-      const chunks = [];
-      res.on('data', (chunk) => chunks.push(chunk));
-      res.on('end', () => resolve(Buffer.concat(chunks)));
-    });
-    req.on('error', reject);
-    req.on('timeout', () => { req.destroy(); reject(new Error('Download timeout')); });
-  });
+  const tmpFile = path.join(os.tmpdir(), 'sf-dl-' + Date.now() + '.bin');
+  try {
+    run(`curl -L -o "${tmpFile}" -A "Mozilla/5.0" --max-redirs 15 --connect-timeout 30 --max-time 120 "${url}"`,
+        { timeout: 180000 });
+    if (!fs.existsSync(tmpFile)) {
+      throw new Error('Download produced no file');
+    }
+    const buf = fs.readFileSync(tmpFile);
+    return Promise.resolve(buf);
+  } catch (err) {
+    return Promise.reject(new Error('curl download failed: ' + err.message.split('\n')[0]));
+  } finally {
+    try { fs.unlinkSync(tmpFile); } catch (_) {}
+  }
 }
 
 function flattenSingleSubdir(dir) {
