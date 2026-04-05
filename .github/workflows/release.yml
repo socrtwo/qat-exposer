@@ -186,16 +186,76 @@ jobs:
       - name: Package web app
         run: |
           VERSION="${{ github.event.inputs.version || github.ref_name }}"
-          # Create a simple start script
-          echo '#!/bin/sh' > start.sh
-          echo 'node src/index.js' >> start.sh
-          chmod +x start.sh
-          echo '@echo off' > start.bat
-          echo 'node src\index.js' >> start.bat
-          echo 'pause' >> start.bat
+
+          # Windows — double-click to start
+          cat > "ClickHereToStart-Windows.bat" << 'BATEOF'
+          @echo off
+          title SF2GH Migrator Server
+          echo.
+          echo  ==========================================
+          echo   SF2GH Migrator is starting...
+          echo   Opening http://localhost:3000 in browser
+          echo  ==========================================
+          echo.
+          echo  (Keep this window open while using the app)
+          echo.
+          timeout /t 2 /nobreak >nul
+          start http://localhost:3000
+          node src\index.js
+          pause
+          BATEOF
+
+          # Mac/Linux — double-click or run in terminal
+          cat > "ClickHereToStart-MacOrLinux.sh" << 'SHEOF'
+          #!/bin/bash
+          cd "$(dirname "$0")"
+          echo ""
+          echo "  =========================================="
+          echo "   SF2GH Migrator is starting..."
+          echo "   Open http://localhost:3000 in your browser"
+          echo "  =========================================="
+          echo ""
+          echo "  (Keep this terminal open while using the app)"
+          echo ""
+          sleep 1
+          if command -v xdg-open >/dev/null 2>&1; then xdg-open http://localhost:3000 &
+          elif command -v open >/dev/null 2>&1; then open http://localhost:3000 &
+          fi
+          node src/index.js
+          SHEOF
+          chmod +x "ClickHereToStart-MacOrLinux.sh"
+
+          # Termux (Android) — tap to start
+          cat > "ClickHereToStart-Termux.sh" << 'TXEOF'
+          #!/data/data/com.termux/files/usr/bin/bash
+          cd "$(dirname "$0")"
+          echo ""
+          echo "  =========================================="
+          echo "   SF2GH Migrator is starting..."
+          echo "  =========================================="
+          echo ""
+          # Install Node.js if not present
+          if ! command -v node >/dev/null 2>&1; then
+            echo "  Installing Node.js (one-time setup)..."
+            pkg install -y nodejs
+          fi
+          echo "  Server running! Open this in your browser:"
+          echo ""
+          echo "    http://localhost:3000"
+          echo ""
+          echo "  (Keep Termux open while using the app)"
+          echo ""
+          termux-open-url http://localhost:3000 2>/dev/null || true
+          node src/index.js
+          TXEOF
+          chmod +x "ClickHereToStart-Termux.sh"
+
           zip -r "SF2GH-Migrator-${VERSION}-web.zip" \
             src/ public/ package.json package-lock.json README.md LICENSE \
-            node_modules/ start.sh start.bat \
+            node_modules/ \
+            "ClickHereToStart-Windows.bat" \
+            "ClickHereToStart-MacOrLinux.sh" \
+            "ClickHereToStart-Termux.sh" \
             --exclude "node_modules/.cache/*" \
             --exclude "node_modules/.package-lock.json"
       - uses: actions/upload-artifact@v4
