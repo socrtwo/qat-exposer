@@ -29,32 +29,33 @@ if (!TOKEN) {
   process.exit(1);
 }
 
-// All SF-migrated repos
+// All SF-migrated repos with their known best source archive (if any).
+// Empty repos and those with no archives are skipped automatically.
 const SF_REPOS = [
-  'autoscrshotanno-SF',
-  'catalog-of-life-SF',
-  'coffice2txt-SF',
-  'corruptexcelrec-SF',
-  'crrptoffcxtrctr-SF',
-  'damageddocx2txt-SF',
-  'datarecoverfree-SF',
-  'excel2ged-SF',
-  'excelrcvryaddin-SF',
-  'fasterposter-SF',
-  'ged2wiki-SF',
-  'genealogyoflife-SF',
-  'godskingsheroes-SF',
-  'oorecovery-SF',
-  'pptxrecovery-SF',
-  'qatindex-SF',
-  'quickwordrecovr-SF',
-  'saveofficedata-SF',
-  'savvyoffice-SF',
-  'shiftf3-SF',
-  'vistaprevrsrcvr-SF',
-  'whereyoubin-SF',
-  'wordrecovery-SF',
-  'xmltrncatorfixr-SF',
+  { name: 'autoscrshotanno-SF', bestArchive: 'screenshot-annotate.zip' },
+  { name: 'catalog-of-life-SF', bestArchive: 'Catalogue-of-Life-Converter-1.0.zip' },
+  { name: 'coffice2txt-SF', bestArchive: null },  // empty repo
+  { name: 'corruptexcelrec-SF', bestArchive: 's2_tools_for_excel_recovery_4.0.2_source_adware_removed.zip' },
+  { name: 'crrptoffcxtrctr-SF', bestArchive: 'corrupt_office_2007_extractor_delphi_7_source_code.zip' },
+  { name: 'damageddocx2txt-SF', bestArchive: '__none_but_has_source__' },  // .pl and .txt already extracted
+  { name: 'datarecoverfree-SF', bestArchive: 'freeware_site_script_2.0.zip' },
+  { name: 'excel2ged-SF', bestArchive: null },  // empty repo
+  { name: 'excelrcvryaddin-SF', bestArchive: null },  // empty repo
+  { name: 'fasterposter-SF', bestArchive: 'fasterposter.com_11_29_2011.zip' },
+  { name: 'ged2wiki-SF', bestArchive: 'gedcom2wiki_1.0.zip' },
+  { name: 'genealogyoflife-SF', bestArchive: null },  // empty repo
+  { name: 'godskingsheroes-SF', bestArchive: 'famous_family_trees.zip' },  // data repo (.ged files)
+  { name: 'oorecovery-SF', bestArchive: null },  // no archive, just readme
+  { name: 'pptxrecovery-SF', bestArchive: null },  // no archive, just readme
+  { name: 'qatindex-SF', bestArchive: 'excel-powerpoint-qat-index.zip' },
+  { name: 'quickwordrecovr-SF', bestArchive: 'savvy_docx_recovery_version_3.0_source.zip' },
+  { name: 'saveofficedata-SF', bestArchive: null },  // empty repo
+  { name: 'savvyoffice-SF', bestArchive: 'Savvy_Repair_for_Microsoft_Office_v1.0.22_source.zip' },
+  { name: 'shiftf3-SF', bestArchive: null },  // empty repo
+  { name: 'vistaprevrsrcvr-SF', bestArchive: 'previous_version_file_explorer_source_2.0.zip' },
+  { name: 'whereyoubin-SF', bestArchive: 'wherehaveibeen_3.0.zip' },
+  { name: 'wordrecovery-SF', bestArchive: 'Version_3.0.5-alpha-source.zip' },
+  { name: 'xmltrncatorfixr-SF', bestArchive: 'xml_truncator_fixer_source.zip' },
 ];
 
 function run(cmd, opts = {}) {
@@ -165,8 +166,16 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 `;
 
-async function processRepo(repoName) {
+async function processRepo(repoEntry) {
+  const repoName = repoEntry.name;
+  const knownBestArchive = repoEntry.bestArchive;
+
   console.log(`\n=== Processing ${repoName} ===`);
+
+  if (!knownBestArchive) {
+    console.log('  No source archive known — skipping (empty or no archives).');
+    return;
+  }
 
   const tmpDir = path.join(os.tmpdir(), 'sf-restructure-' + repoName);
   if (fs.existsSync(tmpDir)) fs.rmSync(tmpDir, { recursive: true });
@@ -181,24 +190,29 @@ async function processRepo(repoName) {
     const allFiles = fs.readdirSync(tmpDir).filter(f => f !== '.git');
     console.log('  Files: ' + allFiles.join(', '));
 
-    if (allFiles.length === 0 || (allFiles.length === 1 && allFiles[0] === 'README.md')) {
-      console.log('  Empty or README-only repo, skipping.');
+    if (allFiles.length === 0) {
+      console.log('  Empty repo, skipping.');
+      return;
+    }
+
+    // Check if already restructured (has src/ or releases/ directory)
+    if (allFiles.includes('src') || allFiles.includes('releases')) {
+      console.log('  Already restructured, skipping.');
       return;
     }
 
     // Separate archives from non-archives
     const archiveExts = /\.(zip|tar\.gz|tgz|tar\.bz2|tar|7z)$/i;
     const archives = allFiles.filter(f => archiveExts.test(f));
-    const nonArchives = allFiles.filter(f => !archiveExts.test(f));
 
     if (archives.length === 0) {
-      console.log('  No archives found, repo may already be structured.');
-      return;
+      console.log('  No archives to extract. Adding .gitignore and LICENSE if missing...');
+      // Still add standard files
     }
 
-    // Find best source archive
-    const bestArchive = findBestArchive(archives);
-    console.log('  Best archive: ' + bestArchive);
+    // Use the pre-identified best archive
+    const bestArchive = archives.includes(knownBestArchive) ? knownBestArchive : findBestArchive(archives);
+    console.log('  Best archive: ' + (bestArchive || 'none'));
 
     // Create releases/ for other archives
     const releasesDir = path.join(tmpDir, 'releases');
@@ -284,6 +298,10 @@ async function main() {
   console.log('SF Repo Restructuring Script');
   console.log('Owner: ' + OWNER);
   console.log('Repos to process: ' + SF_REPOS.length);
+
+  const toProcess = SF_REPOS.filter(r => r.bestArchive);
+  console.log('Repos with archives to restructure: ' + toProcess.length);
+  console.log('Repos skipped (empty/no archive): ' + (SF_REPOS.length - toProcess.length));
 
   for (const repo of SF_REPOS) {
     await processRepo(repo);
