@@ -1,9 +1,7 @@
 /*
  * Office Quick Access Add-in - Task Pane
  *
- * This provides a visual panel with buttons for all QAT-style commands.
- * It serves as an alternative to the ribbon dropdown, especially useful
- * on platforms where custom ribbon commands may not render.
+ * Single dropdown with every QAT command.
  */
 
 /* global Office, Word, Excel */
@@ -27,20 +25,6 @@
     toastTimer = setTimeout(function () {
       toastEl.classList.remove("show");
     }, 2500);
-  }
-
-  // Collapsible sections
-  function setupCollapsibles() {
-    document.querySelectorAll(".section-title[data-toggle]").forEach(function (title) {
-      title.addEventListener("click", function () {
-        var targetId = title.getAttribute("data-toggle");
-        var target = document.getElementById(targetId);
-        if (target) {
-          var isCollapsed = target.classList.toggle("collapsed");
-          title.classList.toggle("collapsed", isCollapsed);
-        }
-      });
-    });
   }
 
   // Command dispatcher
@@ -353,23 +337,27 @@
     }
   }
 
-  // Wire up buttons
-  function setupButtons() {
-    document.querySelectorAll(".cmd-btn[data-cmd]").forEach(function (btn) {
-      btn.addEventListener("click", function () {
-        var cmd = btn.getAttribute("data-cmd");
-        if (commands[cmd]) {
-          commands[cmd]();
-        } else {
-          showToast("Unknown command: " + cmd);
-        }
-      });
+  // Wire up dropdown + Run button
+  function setup() {
+    var select = document.getElementById("command-list");
+    var btn = document.getElementById("run-btn");
+
+    btn.addEventListener("click", function () {
+      var cmd = select.value;
+      if (!cmd) {
+        showToast("Pick a command first.");
+        return;
+      }
+      if (commands[cmd]) {
+        commands[cmd]();
+      } else {
+        showToast("Unknown command: " + cmd);
+      }
     });
   }
 
   // Initialize
   Office.onReady(function () {
-    setupCollapsibles();
-    setupButtons();
+    setup();
   });
 })();

@@ -17,7 +17,7 @@ body {
 }
 
 header {
-  margin-bottom: 16px;
+  margin-bottom: 12px;
   padding-bottom: 8px;
   border-bottom: 2px solid #0078d4;
 }
@@ -28,116 +28,43 @@ header h1 {
   color: #0078d4;
 }
 
-header .subtitle {
-  font-size: 11px;
-  color: #666;
-  margin-top: 2px;
-}
-
-.section {
-  margin-bottom: 12px;
-}
-
-.section-title {
-  font-size: 12px;
-  font-weight: 600;
-  color: #555;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  padding: 6px 0;
-  cursor: pointer;
-  user-select: none;
-  display: flex;
-  align-items: center;
-}
-
-.section-title::before {
-  content: "\25BC";
-  font-size: 8px;
-  margin-right: 6px;
-  transition: transform 0.2s;
-}
-
-.section-title.collapsed::before {
-  transform: rotate(-90deg);
-}
-
-.button-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 4px;
-  padding: 4px 0;
-}
-
-.button-grid.collapsed {
-  display: none;
-}
-
-.size-grid {
-  grid-template-columns: repeat(5, 1fr);
-}
-
-.color-grid {
-  grid-template-columns: repeat(6, 1fr);
-}
-
-.cmd-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 4px;
-  padding: 6px 8px;
+#command-list {
+  width: 100%;
+  padding: 8px;
+  font-size: 13px;
   border: 1px solid #ddd;
   border-radius: 4px;
   background: #fff;
   color: #333;
-  font-size: 12px;
   cursor: pointer;
-  transition: all 0.15s ease;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
-.cmd-btn:hover {
-  background: #e8f0fe;
+#command-list:focus {
+  outline: none;
   border-color: #0078d4;
-  color: #0078d4;
 }
 
-.cmd-btn:active {
-  background: #d0e0f7;
-  transform: scale(0.97);
-}
-
-.cmd-btn .icon {
-  font-size: 14px;
-}
-
-.size-btn {
-  padding: 4px;
-  font-size: 11px;
+#run-btn {
+  width: 100%;
+  margin-top: 8px;
+  padding: 8px;
+  font-size: 13px;
   font-weight: 600;
+  border: 1px solid #0078d4;
+  border-radius: 4px;
+  background: #0078d4;
+  color: #fff;
+  cursor: pointer;
+  transition: background 0.15s ease;
 }
 
-.color-btn {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  font-weight: 700;
-  font-size: 14px;
+#run-btn:hover {
+  background: #006cbe;
 }
 
-footer {
-  margin-top: 16px;
-  padding-top: 8px;
-  border-top: 1px solid #ddd;
-}
-
-footer .hint {
-  font-size: 10px;
-  color: #999;
-  line-height: 1.4;
+#run-btn:active {
+  background: #005a9e;
+  transform: scale(0.98);
 }
 
 /* Status toast */
