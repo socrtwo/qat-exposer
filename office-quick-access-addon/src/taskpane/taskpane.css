@@ -13,30 +13,34 @@ body {
 
 #app {
   padding: 12px;
-  max-width: 320px;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
 }
 
 header {
-  margin-bottom: 12px;
-  padding-bottom: 8px;
+  margin-bottom: 8px;
+  padding-bottom: 6px;
   border-bottom: 2px solid #0078d4;
 }
 
 header h1 {
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 600;
   color: #0078d4;
 }
 
 #command-list {
+  flex: 1;
   width: 100%;
-  padding: 8px;
-  font-size: 13px;
+  font-size: 12px;
+  font-family: inherit;
   border: 1px solid #ddd;
   border-radius: 4px;
   background: #fff;
   color: #333;
   cursor: pointer;
+  overflow-y: auto;
 }
 
 #command-list:focus {
@@ -44,9 +48,18 @@ header h1 {
   border-color: #0078d4;
 }
 
+#command-list option {
+  padding: 3px 6px;
+}
+
+#command-list option:checked {
+  background: #0078d4;
+  color: #fff;
+}
+
 #run-btn {
   width: 100%;
-  margin-top: 8px;
+  margin-top: 6px;
   padding: 8px;
   font-size: 13px;
   font-weight: 600;
@@ -56,6 +69,7 @@ header h1 {
   color: #fff;
   cursor: pointer;
   transition: background 0.15s ease;
+  flex-shrink: 0;
 }
 
 #run-btn:hover {
@@ -64,10 +78,8 @@ header h1 {
 
 #run-btn:active {
   background: #005a9e;
-  transform: scale(0.98);
 }
 
-/* Status toast */
 .toast {
   position: fixed;
   bottom: 10px;
