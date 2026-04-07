@@ -1,8 +1,6 @@
 /*
  * Office Quick Access Add-in - Task Pane
  * Single dropdown exposing every QAT-customizable command.
- * Commands that Office.js can execute run directly;
- * the rest show the ribbon path or keyboard shortcut.
  */
 
 /* global Office, Word, Excel, PowerPoint */
@@ -10,7 +8,7 @@
 (function () {
   "use strict";
 
-  // ── Toast ──────────────────────────────────────────────────────────
+  // ── Toast notification ────────────────────────────────────────────
   var toastEl, toastTimer;
   function showToast(msg) {
     if (!toastEl) {
@@ -24,971 +22,995 @@
     toastTimer = setTimeout(function () { toastEl.classList.remove("show"); }, 2500);
   }
 
-  // ── Ribbon / shortcut hint helper ──────────────────────────────────
-  function ribbon(location) { return function () { showToast("Ribbon: " + location); }; }
-  function shortcut(keys) { return function () { showToast("Shortcut: " + keys); }; }
-  function notAvailable(reason) { return function () { showToast(reason || "Not available via add-in API."); }; }
-
-  // ── Office.js helpers ──────────────────────────────────────────────
+  // ── Office.js helpers ─────────────────────────────────────────────
   function isWord()  { return Office.context.host === Office.HostType.Word; }
   function isExcel() { return Office.context.host === Office.HostType.Excel; }
 
-  function wordRun(fn, ok, label) {
-    Word.run(fn).then(function () { showToast(ok || (label + " done.")); })
-      .catch(function (e) { showToast("Error: " + e.message); });
-  }
-  function excelRun(fn, ok, label) {
-    Excel.run(fn).then(function () { showToast(ok || (label + " done.")); })
-      .catch(function (e) { showToast("Error: " + e.message); });
-  }
-
-  function toggleWordFont(prop) {
-    wordRun(function (ctx) {
-      var sel = ctx.document.getSelection(); sel.font.load(prop);
-      return ctx.sync().then(function () { sel.font[prop] = !sel.font[prop]; return ctx.sync(); });
-    }, prop.charAt(0).toUpperCase() + prop.slice(1) + " toggled.");
-  }
-  function toggleExcelFont(prop) {
-    excelRun(function (ctx) {
-      var r = ctx.workbook.getSelectedRange(); r.format.font.load(prop);
-      return ctx.sync().then(function () { r.format.font[prop] = !r.format.font[prop]; return ctx.sync(); });
-    }, prop.charAt(0).toUpperCase() + prop.slice(1) + " toggled.");
-  }
   function toggleFont(prop) {
-    if (isWord()) toggleWordFont(prop);
-    else if (isExcel()) toggleExcelFont(prop);
-    else showToast("Not available for this app.");
+    if (isWord()) {
+      Word.run(function (c) {
+        var s = c.document.getSelection(); s.font.load(prop);
+        return c.sync().then(function () { s.font[prop] = !s.font[prop]; return c.sync(); });
+      }).then(function () { showToast(prop.charAt(0).toUpperCase()+prop.slice(1)+" toggled."); })
+        .catch(function (e) { showToast("Error: "+e.message); });
+    } else if (isExcel()) {
+      Excel.run(function (c) {
+        var r = c.workbook.getSelectedRange(); r.format.font.load(prop);
+        return c.sync().then(function () { r.format.font[prop] = !r.format.font[prop]; return c.sync(); });
+      }).then(function () { showToast(prop.charAt(0).toUpperCase()+prop.slice(1)+" toggled."); })
+        .catch(function (e) { showToast("Error: "+e.message); });
+    } else { showToast("Not available for this app."); }
   }
 
   function setFontSize(sz) {
-    if (isWord()) wordRun(function (ctx) { ctx.document.getSelection().font.size = sz; return ctx.sync(); }, "Font size: " + sz);
-    else if (isExcel()) excelRun(function (ctx) { ctx.workbook.getSelectedRange().format.font.size = sz; return ctx.sync(); }, "Font size: " + sz);
-    else showToast("Not available.");
+    if (isWord()) {
+      Word.run(function (c) { c.document.getSelection().font.size = sz; return c.sync(); })
+        .then(function () { showToast("Font size: "+sz); })
+        .catch(function (e) { showToast("Error: "+e.message); });
+    } else if (isExcel()) {
+      Excel.run(function (c) { c.workbook.getSelectedRange().format.font.size = sz; return c.sync(); })
+        .then(function () { showToast("Font size: "+sz); })
+        .catch(function (e) { showToast("Error: "+e.message); });
+    } else { showToast("Not available for this app."); }
   }
-  function setFontColor(c) {
-    if (isWord()) wordRun(function (ctx) { ctx.document.getSelection().font.color = c; return ctx.sync(); }, "Color applied.");
-    else if (isExcel()) excelRun(function (ctx) { ctx.workbook.getSelectedRange().format.font.color = c; return ctx.sync(); }, "Color applied.");
-    else showToast("Not available.");
+
+  function setFontColor(color) {
+    if (isWord()) {
+      Word.run(function (c) { c.document.getSelection().font.color = color; return c.sync(); })
+        .then(function () { showToast("Color applied."); })
+        .catch(function (e) { showToast("Error: "+e.message); });
+    } else if (isExcel()) {
+      Excel.run(function (c) { c.workbook.getSelectedRange().format.font.color = color; return c.sync(); })
+        .then(function () { showToast("Color applied."); })
+        .catch(function (e) { showToast("Error: "+e.message); });
+    } else { showToast("Not available for this app."); }
   }
+
   function setFontName(name) {
-    if (isWord()) wordRun(function (ctx) { ctx.document.getSelection().font.name = name; return ctx.sync(); }, "Font: " + name);
-    else if (isExcel()) excelRun(function (ctx) { ctx.workbook.getSelectedRange().format.font.name = name; return ctx.sync(); }, "Font: " + name);
-    else showToast("Not available.");
+    if (isWord()) {
+      Word.run(function (c) { c.document.getSelection().font.name = name; return c.sync(); })
+        .then(function () { showToast("Font: "+name); })
+        .catch(function (e) { showToast("Error: "+e.message); });
+    } else if (isExcel()) {
+      Excel.run(function (c) { c.workbook.getSelectedRange().format.font.name = name; return c.sync(); })
+        .then(function () { showToast("Font: "+name); })
+        .catch(function (e) { showToast("Error: "+e.message); });
+    } else { showToast("Not available for this app."); }
   }
+
   function setAlignment(a) {
-    if (isWord()) wordRun(function (ctx) {
-      var p = ctx.document.getSelection().paragraphs; p.load("items");
-      return ctx.sync().then(function () { p.items.forEach(function (x) { x.alignment = a; }); return ctx.sync(); });
-    }, "Alignment: " + a);
-    else if (isExcel()) excelRun(function (ctx) { ctx.workbook.getSelectedRange().format.horizontalAlignment = a; return ctx.sync(); }, "Alignment: " + a);
-    else showToast("Not available.");
+    if (isWord()) {
+      Word.run(function (c) {
+        var p = c.document.getSelection().paragraphs; p.load("items");
+        return c.sync().then(function () { p.items.forEach(function (i) { i.alignment = a; }); return c.sync(); });
+      }).then(function () { showToast("Alignment: "+a); })
+        .catch(function (e) { showToast("Error: "+e.message); });
+    } else if (isExcel()) {
+      Excel.run(function (c) { c.workbook.getSelectedRange().format.horizontalAlignment = a; return c.sync(); })
+        .then(function () { showToast("Alignment: "+a); })
+        .catch(function (e) { showToast("Error: "+e.message); });
+    } else { showToast("Not available for this app."); }
   }
-  function setHighlight(color) {
-    if (isWord()) wordRun(function (ctx) { ctx.document.getSelection().font.highlightColor = color; return ctx.sync(); }, color ? "Highlighted." : "Highlight removed.");
-    else if (isExcel()) {
-      if (color) excelRun(function (ctx) { ctx.workbook.getSelectedRange().format.fill.color = color; return ctx.sync(); }, "Highlighted.");
-      else excelRun(function (ctx) { ctx.workbook.getSelectedRange().format.fill.clear(); return ctx.sync(); }, "Highlight removed.");
-    }
-  }
+
   function setLineSpacing(val) {
-    if (isWord()) wordRun(function (ctx) {
-      var p = ctx.document.getSelection().paragraphs; p.load("items");
-      return ctx.sync().then(function () { p.items.forEach(function (x) { x.lineSpacing = val; }); return ctx.sync(); });
-    }, "Line spacing: " + val);
-    else showToast("Ribbon: Home > Line Spacing");
+    if (isWord()) {
+      Word.run(function (c) {
+        var p = c.document.getSelection().paragraphs; p.load("items");
+        return c.sync().then(function () { p.items.forEach(function (i) { i.lineSpacing = val; }); return c.sync(); });
+      }).then(function () { showToast("Line spacing: "+val); })
+        .catch(function (e) { showToast("Error: "+e.message); });
+    } else { showToast("Not available for this app."); }
   }
+
+  function setHighlight(color) {
+    if (isWord()) {
+      Word.run(function (c) { c.document.getSelection().font.highlightColor = color; return c.sync(); })
+        .then(function () { showToast(color ? "Highlighted." : "Highlight removed."); })
+        .catch(function (e) { showToast("Error: "+e.message); });
+    } else if (isExcel()) {
+      Excel.run(function (c) {
+        var r = c.workbook.getSelectedRange();
+        if (color) { r.format.fill.color = color; } else { r.format.fill.clear(); }
+        return c.sync();
+      }).then(function () { showToast(color ? "Highlighted." : "Highlight removed."); })
+        .catch(function (e) { showToast("Error: "+e.message); });
+    } else { showToast("Not available for this app."); }
+  }
+
+  function wordInsertBreak(type) {
+    if (!isWord()) { showToast("Only available in Word."); return; }
+    Word.run(function (c) { c.document.getSelection().insertBreak(type, "After"); return c.sync(); })
+      .then(function () { showToast(type+" break inserted."); })
+      .catch(function (e) { showToast("Error: "+e.message); });
+  }
+
+  function wordInsertHtml(html, msg) {
+    if (!isWord()) { showToast("Only available in Word."); return; }
+    Word.run(function (c) { c.document.getSelection().insertHtml(html, "After"); return c.sync(); })
+      .then(function () { showToast(msg); })
+      .catch(function (e) { showToast("Error: "+e.message); });
+  }
+
   function setSpaceBefore(val) {
-    if (isWord()) wordRun(function (ctx) {
-      var p = ctx.document.getSelection().paragraphs; p.load("items");
-      return ctx.sync().then(function () { p.items.forEach(function (x) { x.spaceBefore = val; }); return ctx.sync(); });
-    }, "Space before: " + val + "pt");
-    else showToast("Not available.");
+    if (!isWord()) { showToast("Only available in Word."); return; }
+    Word.run(function (c) {
+      var p = c.document.getSelection().paragraphs; p.load("items");
+      return c.sync().then(function () { p.items.forEach(function (i) { i.spaceBefore = val; }); return c.sync(); });
+    }).then(function () { showToast("Space before: "+val+"pt"); })
+      .catch(function (e) { showToast("Error: "+e.message); });
   }
+
   function setSpaceAfter(val) {
-    if (isWord()) wordRun(function (ctx) {
-      var p = ctx.document.getSelection().paragraphs; p.load("items");
-      return ctx.sync().then(function () { p.items.forEach(function (x) { x.spaceAfter = val; }); return ctx.sync(); });
-    }, "Space after: " + val + "pt");
-    else showToast("Not available.");
-  }
-  function insertBreak(type) {
-    if (isWord()) wordRun(function (ctx) { ctx.document.getSelection().insertBreak(type, "After"); return ctx.sync(); }, type + " break inserted.");
-    else showToast("Not available for this app.");
-  }
-  function insertHtml(html, msg) {
-    if (isWord()) wordRun(function (ctx) { ctx.document.getSelection().insertHtml(html, "After"); return ctx.sync(); }, msg);
-    else showToast("Not available for this app.");
-  }
-  function clearFormatting() {
-    if (isWord()) wordRun(function (ctx) {
-      var sel = ctx.document.getSelection();
-      sel.font.bold = false; sel.font.italic = false; sel.font.underline = "None";
-      sel.font.strikethrough = false; sel.font.superscript = false; sel.font.subscript = false;
-      sel.font.size = 11; sel.font.name = "Calibri"; sel.font.color = "#000000";
-      sel.font.highlightColor = null;
-      return ctx.sync();
-    }, "Formatting cleared.");
-    else if (isExcel()) excelRun(function (ctx) {
-      var r = ctx.workbook.getSelectedRange();
-      r.format.font.bold = false; r.format.font.italic = false; r.format.font.underline = "None";
-      r.format.font.strikethrough = false; r.format.font.size = 11;
-      r.format.font.name = "Calibri"; r.format.font.color = "#000000";
-      return ctx.sync();
-    }, "Formatting cleared.");
-  }
-  function wordInsertText(text, msg) {
-    if (isWord()) wordRun(function (ctx) { ctx.document.getSelection().insertText(text, "Replace"); return ctx.sync(); }, msg);
-    else showToast("Not available.");
-  }
-  function setIndent(prop, val) {
-    if (isWord()) wordRun(function (ctx) {
-      var p = ctx.document.getSelection().paragraphs; p.load("items");
-      return ctx.sync().then(function () { p.items.forEach(function (x) { x[prop] = val; }); return ctx.sync(); });
-    }, prop + " set.");
-    else showToast("Not available.");
-  }
-  function changeIndent(delta) {
-    if (isWord()) wordRun(function (ctx) {
-      var p = ctx.document.getSelection().paragraphs; p.load("items/leftIndent");
-      return ctx.sync().then(function () { p.items.forEach(function (x) { x.leftIndent = Math.max(0, x.leftIndent + delta); }); return ctx.sync(); });
-    }, "Indent changed.");
-    else showToast("Ribbon: Home > Increase/Decrease Indent");
-  }
-  function setStyle(name) {
-    if (isWord()) wordRun(function (ctx) { ctx.document.getSelection().style = name; return ctx.sync(); }, "Style: " + name);
-    else showToast("Not available.");
-  }
-  function wordSearch(text) {
-    if (isWord()) wordRun(function (ctx) {
-      var body = ctx.document.body;
-      var results = body.search(text, { matchCase: false, matchWholeWord: false });
-      results.load("items");
-      return ctx.sync().then(function () {
-        if (results.items.length > 0) { results.items[0].select(); return ctx.sync(); }
-        else { showToast("Not found."); }
-      });
-    }, "Found.");
-    else showToast("Use Ctrl+F.");
+    if (!isWord()) { showToast("Only available in Word."); return; }
+    Word.run(function (c) {
+      var p = c.document.getSelection().paragraphs; p.load("items");
+      return c.sync().then(function () { p.items.forEach(function (i) { i.spaceAfter = val; }); return c.sync(); });
+    }).then(function () { showToast("Space after: "+val+"pt"); })
+      .catch(function (e) { showToast("Error: "+e.message); });
   }
 
-  // ── The full QAT command list ──────────────────────────────────────
-  // Each entry: [value, label, handler]
-  // handler is a function, or null => falls back to ribbon hint embedded in label
+  function setIndent(side, val) {
+    if (!isWord()) { showToast("Only available in Word."); return; }
+    Word.run(function (c) {
+      var p = c.document.getSelection().paragraphs; p.load("items");
+      return c.sync().then(function () {
+        p.items.forEach(function (i) {
+          if (side === "left") i.leftIndent = val;
+          else if (side === "right") i.rightIndent = val;
+          else if (side === "first") i.firstLineIndent = val;
+        });
+        return c.sync();
+      });
+    }).then(function () { showToast("Indent set."); })
+      .catch(function (e) { showToast("Error: "+e.message); });
+  }
+
+  function ribbon(tab, tip) { showToast("Use the ribbon: " + tab + (tip ? " \u2192 " + tip : "")); }
+  function shortcut(keys) { showToast("Keyboard shortcut: " + keys); }
+
+  // ── Master command list (alphabetical) ────────────────────────────
+  // Each entry: [label, handler]
+  // handler is a function that either executes via Office.js or shows guidance.
+
   var ALL_COMMANDS = [
-    // --- A ---
-    ["acceptAllChanges", "Accept All Changes", ribbon("Review > Accept > Accept All Changes")],
-    ["acceptChange", "Accept Change", ribbon("Review > Accept")],
-    ["accessibility", "Accessibility Checker", ribbon("Review > Check Accessibility")],
-    ["addChartElement", "Add Chart Element", ribbon("Chart Design > Add Chart Element")],
-    ["addHorizontalLine", "Add Horizontal Line", function () { insertHtml('<hr style="border:1px solid #999;width:100%">', "Horizontal line inserted."); }],
-    ["addShape", "Add Shape", ribbon("Insert > Shapes")],
-    ["addText", "Add Text", ribbon("References > Add Text")],
-    ["adjustListIndents", "Adjust List Indents", ribbon("Right-click list > Adjust List Indents")],
-    ["advancedFind", "Advanced Find", shortcut("Ctrl+H")],
-    ["alignBottom", "Align Bottom", ribbon("Table Layout > Cell Alignment > Align Bottom")],
-    ["alignBottomCenter", "Align Bottom Center", ribbon("Table Layout > Cell Alignment")],
-    ["alignBottomLeft", "Align Bottom Left", ribbon("Table Layout > Cell Alignment")],
-    ["alignBottomRight", "Align Bottom Right", ribbon("Table Layout > Cell Alignment")],
-    ["alignCenter", "Align Center", function () { setAlignment("Center"); }],
-    ["alignJustify", "Align Justify", function () { setAlignment("Justified"); }],
-    ["alignLeft", "Align Left", function () { setAlignment("Left"); }],
-    ["alignMiddleCenter", "Align Middle Center", ribbon("Table Layout > Cell Alignment")],
-    ["alignMiddleLeft", "Align Middle Left", ribbon("Table Layout > Cell Alignment")],
-    ["alignMiddleRight", "Align Middle Right", ribbon("Table Layout > Cell Alignment")],
-    ["alignRight", "Align Right", function () { setAlignment("Right"); }],
-    ["alignTopCenter", "Align Top Center", ribbon("Table Layout > Cell Alignment")],
-    ["alignTopLeft", "Align Top Left", ribbon("Table Layout > Cell Alignment")],
-    ["alignTopRight", "Align Top Right", ribbon("Table Layout > Cell Alignment")],
-    ["allCaps", "All Caps", function () {
-      if (isWord()) wordRun(function (ctx) {
-        var s = ctx.document.getSelection(); s.font.load("allCaps");
-        return ctx.sync().then(function () { s.font.allCaps = !s.font.allCaps; return ctx.sync(); });
-      }, "All caps toggled.");
-      else showToast("Not available.");
+    ["About", function(){ribbon("File","Account");}],
+    ["Accept All Changes in Document", function(){ribbon("Review","Accept > Accept All Changes");}],
+    ["Accept and Move to Next", function(){ribbon("Review","Accept");}],
+    ["Accessibility Checker", function(){ribbon("Review","Check Accessibility");}],
+    ["Add Chart Element", function(){ribbon("Chart Design","Add Chart Element");}],
+    ["Add Horizontal Line", function(){wordInsertHtml('<hr style="border:1px solid #999;width:100%">',"Line inserted.");}],
+    ["Add Shape", function(){ribbon("Insert","Shapes");}],
+    ["Add Text (Table of Contents)", function(){ribbon("References","Add Text");}],
+    ["Adjust List Indents", function(){ribbon("Home","Multilevel List > Adjust");}],
+    ["Advanced Find", function(){shortcut("Ctrl+Shift+F");}],
+    ["Align Bottom", function(){ribbon("Table Layout","Align Bottom");}],
+    ["Align Bottom Center", function(){ribbon("Table Layout","Align Bottom Center");}],
+    ["Align Bottom Left", function(){ribbon("Table Layout","Align Bottom Left");}],
+    ["Align Bottom Right", function(){ribbon("Table Layout","Align Bottom Right");}],
+    ["Align Center", function(){setAlignment("Center");}],
+    ["Align Left", function(){setAlignment("Left");}],
+    ["Align Middle Center", function(){ribbon("Table Layout","Align Center");}],
+    ["Align Middle Left", function(){ribbon("Table Layout","Align Center Left");}],
+    ["Align Middle Right", function(){ribbon("Table Layout","Align Center Right");}],
+    ["Align Right", function(){setAlignment("Right");}],
+    ["Align Top", function(){ribbon("Table Layout","Align Top");}],
+    ["Align Top Center", function(){ribbon("Table Layout","Align Top Center");}],
+    ["Align Top Left", function(){ribbon("Table Layout","Align Top Left");}],
+    ["Align Top Right", function(){ribbon("Table Layout","Align Top Right");}],
+    ["All Caps", function(){
+      if(isWord()){Word.run(function(c){var s=c.document.getSelection();s.font.load("allCaps");return c.sync().then(function(){s.font.allCaps=!s.font.allCaps;return c.sync();});}).then(function(){showToast("All Caps toggled.");}).catch(function(e){showToast("Error: "+e.message);});}
+      else{showToast("Not available for this app.");}
     }],
-    ["arrangeAll", "Arrange All", ribbon("View > Arrange All")],
-    ["attachTemplate", "Attach Template", ribbon("Developer > Document Template")],
-    ["autoCorrectOptions", "AutoCorrect Options", ribbon("File > Options > Proofing > AutoCorrect Options")],
-    ["autoFitContents", "AutoFit Contents", ribbon("Table Layout > AutoFit > AutoFit Contents")],
-    ["autoFitWindow", "AutoFit Window", ribbon("Table Layout > AutoFit > AutoFit Window")],
-    ["autoSave", "AutoSave", ribbon("Title bar > AutoSave toggle")],
-    ["autoText", "AutoText", ribbon("Insert > Quick Parts > AutoText")],
-    // --- B ---
-    ["backgroundRemoval", "Background Removal", ribbon("Picture Format > Remove Background")],
-    ["bibliography", "Bibliography", ribbon("References > Bibliography")],
-    ["blankPage", "Blank Page", function () { insertBreak("Page"); }],
-    ["blockAuthors", "Block Authors", ribbon("Review > Block Authors")],
-    ["bold", "Bold", function () { toggleFont("bold"); }],
-    ["bookmark", "Bookmark", shortcut("Ctrl+Shift+F5")],
-    ["borderPainter", "Border Painter", ribbon("Table Design > Border Painter")],
-    ["borders", "Borders", ribbon("Home > Borders")],
-    ["bordersAndShading", "Borders and Shading", ribbon("Home > Borders > Borders and Shading")],
-    ["breakLink", "Break Link", ribbon("Right-click link > Edit Link > Break Link")],
-    ["breaks", "Breaks", ribbon("Layout > Breaks")],
-    ["bringForward", "Bring Forward", ribbon("Shape Format > Bring Forward")],
-    ["bringInFrontOfText", "Bring in Front of Text", ribbon("Shape Format > Wrap Text > In Front of Text")],
-    ["bringToFront", "Bring to Front", ribbon("Shape Format > Bring to Front")],
-    ["buildingBlocksOrganizer", "Building Blocks Organizer", ribbon("Insert > Quick Parts > Building Blocks Organizer")],
-    ["bullets", "Bullets", ribbon("Home > Bullets")],
-
-    // --- C ---
-    ["calculate", "Calculate", ribbon("Status bar or Table Layout > Formula")],
-    ["cancel", "Cancel", shortcut("Escape")],
-    ["capitalizeEachWord", "Capitalize Each Word", ribbon("Home > Change Case > Capitalize Each Word")],
-    ["caption", "Caption", ribbon("References > Insert Caption")],
-    ["cellMargins", "Cell Margins", ribbon("Table Layout > Cell Margins")],
-    ["changeCase", "Change Case", shortcut("Shift+F3")],
-    ["changeChartType", "Change Chart Type", ribbon("Chart Design > Change Chart Type")],
-    ["changePicture", "Change Picture", ribbon("Picture Format > Change Picture")],
-    ["changeShape", "Change Shape", ribbon("Shape Format > Edit Shape > Change Shape")],
-    ["characterBorder", "Character Border", ribbon("Home > Character Border")],
-    ["characterShading", "Character Shading", ribbon("Home > Character Shading")],
-    ["checkAccessibility", "Check Accessibility", ribbon("Review > Check Accessibility")],
-    ["checkCompatibility", "Check Compatibility", ribbon("File > Info > Check for Issues > Check Compatibility")],
-    ["citation", "Citation", ribbon("References > Insert Citation")],
-    ["clearAllFormatting", "Clear All Formatting", function () { clearFormatting(); }],
-    ["clipboard", "Clipboard", shortcut("Ctrl+C / Ctrl+V / Ctrl+X")],
-    ["close", "Close", shortcut("Ctrl+W")],
-    ["closeHeaderFooter", "Close Header and Footer", ribbon("Header & Footer > Close Header and Footer")],
-    ["collapse", "Collapse", ribbon("View > Navigation Pane > Collapse")],
-    ["collapseAll", "Collapse All", ribbon("View > Collapse All")],
-    ["colorBlack", "Color: Black", function () { setFontColor("#000000"); }],
-    ["colorBlue", "Color: Blue", function () { setFontColor("#0000FF"); }],
-    ["colorBrown", "Color: Brown", function () { setFontColor("#993300"); }],
-    ["colorCyan", "Color: Cyan", function () { setFontColor("#00FFFF"); }],
-    ["colorDarkBlue", "Color: Dark Blue", function () { setFontColor("#000080"); }],
-    ["colorDarkCyan", "Color: Dark Cyan", function () { setFontColor("#008080"); }],
-    ["colorDarkGray", "Color: Dark Gray", function () { setFontColor("#808080"); }],
-    ["colorDarkGreen", "Color: Dark Green", function () { setFontColor("#006400"); }],
-    ["colorDarkMagenta", "Color: Dark Magenta", function () { setFontColor("#800080"); }],
-    ["colorDarkRed", "Color: Dark Red", function () { setFontColor("#8B0000"); }],
-    ["colorGold", "Color: Gold", function () { setFontColor("#FFD700"); }],
-    ["colorGray", "Color: Gray", function () { setFontColor("#C0C0C0"); }],
-    ["colorGreen", "Color: Green", function () { setFontColor("#008000"); }],
-    ["colorLightBlue", "Color: Light Blue", function () { setFontColor("#ADD8E6"); }],
-    ["colorLightGreen", "Color: Light Green", function () { setFontColor("#90EE90"); }],
-    ["colorLime", "Color: Lime", function () { setFontColor("#00FF00"); }],
-    ["colorMagenta", "Color: Magenta", function () { setFontColor("#FF00FF"); }],
-    ["colorOlive", "Color: Olive", function () { setFontColor("#808000"); }],
-    ["colorOrange", "Color: Orange", function () { setFontColor("#FFA500"); }],
-    ["colorPink", "Color: Pink", function () { setFontColor("#FFC0CB"); }],
-    ["colorPurple", "Color: Purple", function () { setFontColor("#800080"); }],
-    ["colorRed", "Color: Red", function () { setFontColor("#FF0000"); }],
-    ["colorTeal", "Color: Teal", function () { setFontColor("#008080"); }],
-    ["colorViolet", "Color: Violet", function () { setFontColor("#EE82EE"); }],
-    ["colorWhite", "Color: White", function () { setFontColor("#FFFFFF"); }],
-    ["colorYellow", "Color: Yellow", function () { setFontColor("#FFFF00"); }],
-    ["columnBreak", "Column Break", function () { insertBreak("Column"); }],
-    ["columns", "Columns", ribbon("Layout > Columns")],
-    ["combineDocuments", "Combine Documents", ribbon("Review > Compare > Combine")],
-    ["compare", "Compare", ribbon("Review > Compare")],
-    ["compareDocuments", "Compare Documents", ribbon("Review > Compare > Compare")],
-    ["compressPictures", "Compress Pictures", ribbon("Picture Format > Compress Pictures")],
-    ["contentControlProperties", "Content Control Properties", ribbon("Developer > Properties")],
-    ["continuousBreak", "Continuous Section Break", function () { insertBreak("SectionContinuous"); }],
-    ["continueNumbering", "Continue Numbering", ribbon("Right-click list > Continue Numbering")],
-    ["convertTableToText", "Convert Table to Text", ribbon("Table Layout > Convert to Text")],
-    ["convertTextToTable", "Convert Text to Table", ribbon("Insert > Table > Convert Text to Table")],
-    ["copy", "Copy", shortcut("Ctrl+C")],
-    ["coverPage", "Cover Page", ribbon("Insert > Cover Page")],
-    ["createAutoText", "Create AutoText", ribbon("Insert > Quick Parts > AutoText > Save Selection")],
-    ["crossReference", "Cross-reference", ribbon("References > Cross-reference")],
-    ["customMargins", "Custom Margins", ribbon("Layout > Margins > Custom Margins")],
-    ["customizeKeyboard", "Customize Keyboard", ribbon("File > Options > Customize Ribbon > Customize")],
-    ["customizeQuickAccessToolbar", "Customize Quick Access Toolbar", ribbon("File > Options > Quick Access Toolbar")],
-    ["customizeRibbon", "Customize Ribbon", ribbon("File > Options > Customize Ribbon")],
-    ["cut", "Cut", shortcut("Ctrl+X")],
-    // --- D ---
-    ["dataLabels", "Data Labels", ribbon("Chart Design > Add Chart Element > Data Labels")],
-    ["dataTable", "Data Table", ribbon("Chart Design > Add Chart Element > Data Table")],
-    ["decimalTab", "Decimal Tab", ribbon("Paragraph dialog > Tabs > Decimal")],
-    ["decreaseFontSize", "Decrease Font Size", function () {
-      if (isWord()) wordRun(function (ctx) {
-        var s = ctx.document.getSelection(); s.font.load("size");
-        return ctx.sync().then(function () { s.font.size = Math.max(1, s.font.size - 1); return ctx.sync(); });
-      }, "Font size decreased.");
-      else shortcut("Ctrl+Shift+<")();
+    ["Arrange All Windows", function(){ribbon("View","Arrange All");}],
+    ["Attach Template", function(){ribbon("Developer","Document Template");}],
+    ["AutoCorrect Options", function(){ribbon("File","Options > Proofing > AutoCorrect Options");}],
+    ["AutoFit Contents", function(){ribbon("Table Layout","AutoFit > AutoFit Contents");}],
+    ["AutoFit Window", function(){ribbon("Table Layout","AutoFit > AutoFit Window");}],
+    ["AutoFormat", function(){ribbon("File","Options > Proofing > AutoFormat");}],
+    ["AutoSave", function(){ribbon("File","AutoSave toggle (top-left)");}],
+    ["AutoText", function(){ribbon("Insert","Quick Parts > AutoText");}],
+    ["Blank Page", function(){
+      if(isWord()){Word.run(function(c){c.document.getSelection().insertBreak("Page","After");return c.sync();}).then(function(){showToast("Blank page inserted.");}).catch(function(e){showToast("Error: "+e.message);});}
+      else{showToast("Only available in Word.");}
     }],
-    ["decreaseIndent", "Decrease Indent", function () { changeIndent(-36); }],
-    ["defineNewBullet", "Define New Bullet", ribbon("Home > Bullets > Define New Bullet")],
-    ["defineNewListStyle", "Define New List Style", ribbon("Home > Multilevel List > Define New List Style")],
-    ["defineNewMultilevelList", "Define New Multilevel List", ribbon("Home > Multilevel List > Define New Multilevel List")],
-    ["defineNewNumberFormat", "Define New Number Format", ribbon("Home > Numbering > Define New Number Format")],
-    ["delete", "Delete", shortcut("Delete key")],
-    ["deleteAllComments", "Delete All Comments", ribbon("Review > Delete > Delete All Comments")],
-    ["deleteComment", "Delete Comment", ribbon("Review > Delete")],
-    ["deleteCells", "Delete Cells", ribbon("Table Layout > Delete > Delete Cells")],
-    ["deleteColumns", "Delete Columns", ribbon("Table Layout > Delete > Delete Columns")],
-    ["deleteRows", "Delete Rows", ribbon("Table Layout > Delete > Delete Rows")],
-    ["deleteTable", "Delete Table", ribbon("Table Layout > Delete > Delete Table")],
-    ["demote", "Demote", ribbon("Outlining > Demote")],
-    ["demoteToBodyText", "Demote to Body Text", ribbon("Outlining > Demote to Body Text")],
-    ["designMode", "Design Mode", ribbon("Developer > Design Mode")],
-    ["differentFirstPage", "Different First Page", ribbon("Header & Footer > Different First Page")],
-    ["differentOddEven", "Different Odd & Even Pages", ribbon("Header & Footer > Different Odd & Even Pages")],
-    ["distributeColumns", "Distribute Columns", ribbon("Table Layout > Distribute Columns")],
-    ["distributeRows", "Distribute Rows", ribbon("Table Layout > Distribute Rows")],
-    ["documentInspector", "Document Inspector", ribbon("File > Info > Check for Issues > Inspect Document")],
-    ["documentMap", "Document Map", ribbon("View > Navigation Pane")],
-    ["documentProtection", "Document Protection", ribbon("Review > Restrict Editing")],
-    ["dontHyphenate", "Don't Hyphenate", ribbon("Paragraph dialog > Line and Page Breaks > Don't hyphenate")],
-    ["doubleStrikethrough", "Double Strikethrough", function () {
-      if (isWord()) wordRun(function (ctx) {
-        var s = ctx.document.getSelection(); s.font.load("doubleStrikethrough");
-        return ctx.sync().then(function () { s.font.doubleStrikethrough = !s.font.doubleStrikethrough; return ctx.sync(); });
-      }, "Double strikethrough toggled.");
-      else showToast("Home > Font dialog > Double strikethrough");
+    ["Bold", function(){toggleFont("bold");}],
+    ["Bookmark", function(){shortcut("Ctrl+Shift+F5");}],
+    ["Borders and Shading", function(){ribbon("Home","Borders dropdown > Borders and Shading");}],
+    ["Bring Forward", function(){ribbon("Shape Format","Bring Forward");}],
+    ["Bring in Front of Text", function(){ribbon("Shape Format","Bring Forward > In Front of Text");}],
+    ["Bring to Front", function(){ribbon("Shape Format","Bring to Front");}],
+    ["Building Blocks Organizer", function(){ribbon("Insert","Quick Parts > Building Blocks Organizer");}],
+    ["Bullets", function(){ribbon("Home","Bullets");}],
+    ["Calculate", function(){ribbon("Review","Word Count / Formula");}],
+    ["Cell Margins", function(){ribbon("Table Layout","Cell Margins");}],
+    ["Center", function(){setAlignment("Center");}],
+    ["Change Case: UPPERCASE", function(){
+      if(isWord()){Word.run(function(c){var s=c.document.getSelection();s.load("text");return c.sync().then(function(){s.insertText(s.text.toUpperCase(),"Replace");return c.sync();});}).then(function(){showToast("Changed to UPPERCASE.");}).catch(function(e){showToast("Error: "+e.message);});}
+      else{showToast("Not available for this app.");}
     }],
-    ["doubleUnderline", "Double Underline", function () {
-      if (isWord()) wordRun(function (ctx) {
-        var s = ctx.document.getSelection(); s.font.load("underline");
-        return ctx.sync().then(function () { s.font.underline = s.font.underline === "Double" ? "None" : "Double"; return ctx.sync(); });
-      }, "Double underline toggled.");
-      else showToast("Home > Font dialog > Double underline");
+    ["Change Case: lowercase", function(){
+      if(isWord()){Word.run(function(c){var s=c.document.getSelection();s.load("text");return c.sync().then(function(){s.insertText(s.text.toLowerCase(),"Replace");return c.sync();});}).then(function(){showToast("Changed to lowercase.");}).catch(function(e){showToast("Error: "+e.message);});}
+      else{showToast("Not available for this app.");}
     }],
-    ["draftView", "Draft View", ribbon("View > Draft")],
-    ["drawTable", "Draw Table", ribbon("Insert > Table > Draw Table")],
-    ["drawTextBox", "Draw Text Box", ribbon("Insert > Text Box > Draw Text Box")],
-    ["drawingCanvas", "Drawing Canvas", ribbon("Insert > Shapes > New Drawing Canvas")],
-    ["dropCap", "Drop Cap", ribbon("Insert > Drop Cap")],
-
-    // --- E ---
-    ["editingRestrictions", "Editing Restrictions", ribbon("Review > Restrict Editing")],
-    ["editor", "Editor", ribbon("Home > Editor")],
-    ["effects", "Effects (Theme)", ribbon("Design > Effects")],
-    ["email", "Email", ribbon("File > Share > Email")],
-    ["embedFonts", "Embed Fonts", ribbon("File > Options > Save > Embed fonts")],
-    ["emphasisMark", "Emphasis Mark", ribbon("Home > Font dialog > Emphasis mark")],
-    ["encloseCharacters", "Enclose Characters", ribbon("Home > Enclose Characters")],
-    ["encryptWithPassword", "Encrypt with Password", ribbon("File > Info > Protect Document > Encrypt with Password")],
-    ["endnote", "Endnote", ribbon("References > Insert Endnote")],
-    ["envelopes", "Envelopes", ribbon("Mailings > Envelopes")],
-    ["equation", "Equation", ribbon("Insert > Equation")],
-    ["eraseTable", "Erase (Table)", ribbon("Table Layout > Eraser")],
-    ["errorBars", "Error Bars", ribbon("Chart Design > Add Chart Element > Error Bars")],
-    ["evenPageBreak", "Even Page Section Break", function () { insertBreak("SectionEven"); }],
-    ["expand", "Expand", ribbon("View > Navigation Pane > Expand")],
-    ["expandAll", "Expand All", ribbon("View > Expand All")],
-    ["exportPdf", "Export to PDF/XPS", ribbon("File > Export > Create PDF/XPS")],
-    // --- F ---
-    ["field", "Field", ribbon("Insert > Quick Parts > Field")],
-    ["fieldCodes", "Field Codes", shortcut("Alt+F9")],
-    ["fieldShading", "Field Shading", ribbon("File > Options > Advanced > Show field shading")],
-    ["fillColor", "Fill Color", ribbon("Home > Shading / Shape Format > Shape Fill")],
-    ["find", "Find", shortcut("Ctrl+F")],
-    ["findAndReplace", "Find and Replace", shortcut("Ctrl+H")],
-    ["findNext", "Find Next", shortcut("Ctrl+G or F5")],
-    ["firstLineIndent", "First Line Indent", function () { setIndent("firstLineIndent", 36); }],
-    ["flipHorizontal", "Flip Horizontal", ribbon("Shape Format > Rotate > Flip Horizontal")],
-    ["flipVertical", "Flip Vertical", ribbon("Shape Format > Rotate > Flip Vertical")],
-    ["focusMode", "Focus Mode", ribbon("View > Focus")],
-    ["fontArial", "Font: Arial", function () { setFontName("Arial"); }],
-    ["fontCalibri", "Font: Calibri", function () { setFontName("Calibri"); }],
-    ["fontCambria", "Font: Cambria", function () { setFontName("Cambria"); }],
-    ["fontComicSans", "Font: Comic Sans MS", function () { setFontName("Comic Sans MS"); }],
-    ["fontConsolas", "Font: Consolas", function () { setFontName("Consolas"); }],
-    ["fontCourier", "Font: Courier New", function () { setFontName("Courier New"); }],
-    ["fontGaramond", "Font: Garamond", function () { setFontName("Garamond"); }],
-    ["fontGeorgia", "Font: Georgia", function () { setFontName("Georgia"); }],
-    ["fontImpact", "Font: Impact", function () { setFontName("Impact"); }],
-    ["fontLucidaConsole", "Font: Lucida Console", function () { setFontName("Lucida Console"); }],
-    ["fontPalatino", "Font: Palatino Linotype", function () { setFontName("Palatino Linotype"); }],
-    ["fontSegoeUI", "Font: Segoe UI", function () { setFontName("Segoe UI"); }],
-    ["fontTahoma", "Font: Tahoma", function () { setFontName("Tahoma"); }],
-    ["fontTimesNewRoman", "Font: Times New Roman", function () { setFontName("Times New Roman"); }],
-    ["fontTrebuchet", "Font: Trebuchet MS", function () { setFontName("Trebuchet MS"); }],
-    ["fontVerdana", "Font: Verdana", function () { setFontName("Verdana"); }],
-    ["fontColor", "Font Color", ribbon("Home > Font Color dropdown")],
-    ["fontDialog", "Font Dialog", shortcut("Ctrl+D")],
-    ["fontSize8", "Font Size: 8", function () { setFontSize(8); }],
-    ["fontSize9", "Font Size: 9", function () { setFontSize(9); }],
-    ["fontSize10", "Font Size: 10", function () { setFontSize(10); }],
-    ["fontSize10half", "Font Size: 10.5", function () { setFontSize(10.5); }],
-    ["fontSize11", "Font Size: 11", function () { setFontSize(11); }],
-    ["fontSize12", "Font Size: 12", function () { setFontSize(12); }],
-    ["fontSize14", "Font Size: 14", function () { setFontSize(14); }],
-    ["fontSize16", "Font Size: 16", function () { setFontSize(16); }],
-    ["fontSize18", "Font Size: 18", function () { setFontSize(18); }],
-    ["fontSize20", "Font Size: 20", function () { setFontSize(20); }],
-    ["fontSize22", "Font Size: 22", function () { setFontSize(22); }],
-    ["fontSize24", "Font Size: 24", function () { setFontSize(24); }],
-    ["fontSize26", "Font Size: 26", function () { setFontSize(26); }],
-    ["fontSize28", "Font Size: 28", function () { setFontSize(28); }],
-    ["fontSize36", "Font Size: 36", function () { setFontSize(36); }],
-    ["fontSize48", "Font Size: 48", function () { setFontSize(48); }],
-    ["fontSize72", "Font Size: 72", function () { setFontSize(72); }],
-    ["footer", "Footer", ribbon("Insert > Footer")],
-    ["footerFromBottom", "Footer from Bottom", ribbon("Header & Footer > Footer from Bottom")],
-    ["footnote", "Footnote", ribbon("References > Insert Footnote")],
-    ["formatColumns", "Format Columns", ribbon("Layout > Columns > More Columns")],
-    ["formatObject", "Format Object", ribbon("Right-click object > Format Object")],
-    ["formatPageNumbers", "Format Page Numbers", ribbon("Insert > Page Number > Format Page Numbers")],
-    ["formatPainter", "Format Painter", shortcut("Ctrl+Shift+C to copy, Ctrl+Shift+V to paste format")],
-    ["formatTextEffects", "Format Text Effects", ribbon("Home > Font dialog > Text Effects")],
-    ["formattingMarks", "Formatting Marks", shortcut("Ctrl+Shift+8")],
-    ["formulas", "Formulas (Table)", ribbon("Table Layout > Formula")],
-    ["fullScreenReading", "Full Screen Reading", ribbon("View > Read Mode")],
-
-    // --- G ---
-    ["goBack", "Go Back", shortcut("Shift+F5")],
-    ["goTo", "Go To", shortcut("Ctrl+G or F5")],
-    ["goToBookmark", "Go to Bookmark", shortcut("Ctrl+Shift+F5")],
-    ["goToComment", "Go to Comment", ribbon("Review > Next / Previous comment")],
-    ["goToEndnote", "Go to Endnote", ribbon("References > Next Endnote")],
-    ["goToFooter", "Go to Footer", ribbon("Insert > Footer > Edit Footer")],
-    ["goToFootnote", "Go to Footnote", ribbon("References > Next Footnote")],
-    ["goToHeader", "Go to Header", ribbon("Insert > Header > Edit Header")],
-    ["goToNextComment", "Go to Next Comment", ribbon("Review > Next")],
-    ["goToNextSection", "Go to Next Section", ribbon("Header & Footer > Next Section")],
-    ["goToPage", "Go to Page", shortcut("Ctrl+G")],
-    ["goToPrevComment", "Go to Previous Comment", ribbon("Review > Previous")],
-    ["goToPrevSection", "Go to Previous Section", ribbon("Header & Footer > Previous Section")],
-    ["greetingLine", "Greeting Line", ribbon("Mailings > Greeting Line")],
-    ["gridlines", "Gridlines", ribbon("View > Gridlines")],
-    ["group", "Group", ribbon("Shape Format > Group > Group")],
-    ["growFont", "Grow Font", shortcut("Ctrl+Shift+>")],
-    // --- H ---
-    ["hangingIndent", "Hanging Indent", function () { setIndent("firstLineIndent", -36); }],
-    ["header", "Header", ribbon("Insert > Header")],
-    ["headerFromTop", "Header from Top", ribbon("Header & Footer > Header from Top")],
-    ["headerRow", "Header Row (Table)", ribbon("Table Design > Header Row")],
-    ["heading1", "Heading 1", function () { setStyle("Heading 1"); }],
-    ["heading2", "Heading 2", function () { setStyle("Heading 2"); }],
-    ["heading3", "Heading 3", function () { setStyle("Heading 3"); }],
-    ["heading4", "Heading 4", function () { setStyle("Heading 4"); }],
-    ["heading5", "Heading 5", function () { setStyle("Heading 5"); }],
-    ["heading6", "Heading 6", function () { setStyle("Heading 6"); }],
-    ["headingRowsRepeat", "Heading Rows Repeat", ribbon("Table Layout > Repeat Header Rows")],
-    ["help", "Help", shortcut("F1")],
-    ["hidden", "Hidden Text", function () {
-      if (isWord()) wordRun(function (ctx) {
-        var s = ctx.document.getSelection(); s.font.load("hidden");
-        return ctx.sync().then(function () { s.font.hidden = !s.font.hidden; return ctx.sync(); });
-      }, "Hidden text toggled.");
-      else showToast("Home > Font dialog > Hidden");
+    ["Change Case: Capitalize Each Word", function(){
+      if(isWord()){Word.run(function(c){var s=c.document.getSelection();s.load("text");return c.sync().then(function(){s.insertText(s.text.replace(/\b\w/g,function(l){return l.toUpperCase();}),"Replace");return c.sync();});}).then(function(){showToast("Capitalized each word.");}).catch(function(e){showToast("Error: "+e.message);});}
+      else{showToast("Not available for this app.");}
     }],
-    ["hideGrammaticalErrors", "Hide Grammatical Errors", ribbon("File > Options > Proofing")],
-    ["hideSpellingErrors", "Hide Spelling Errors", ribbon("File > Options > Proofing")],
-    ["highlightBlue", "Highlight: Blue", function () { setHighlight("#0000FF"); }],
-    ["highlightBrightGreen", "Highlight: Bright Green", function () { setHighlight("#00FF00"); }],
-    ["highlightCyan", "Highlight: Cyan", function () { setHighlight("#00FFFF"); }],
-    ["highlightDarkBlue", "Highlight: Dark Blue", function () { setHighlight("#00008B"); }],
-    ["highlightDarkRed", "Highlight: Dark Red", function () { setHighlight("#8B0000"); }],
-    ["highlightDarkYellow", "Highlight: Dark Yellow", function () { setHighlight("#808000"); }],
-    ["highlightGray25", "Highlight: Gray 25%", function () { setHighlight("#C0C0C0"); }],
-    ["highlightGray50", "Highlight: Gray 50%", function () { setHighlight("#808080"); }],
-    ["highlightGreen", "Highlight: Green", function () { setHighlight("#008000"); }],
-    ["highlightMagenta", "Highlight: Magenta", function () { setHighlight("#FF00FF"); }],
-    ["highlightNone", "Highlight: None (Remove)", function () { setHighlight(null); }],
-    ["highlightPink", "Highlight: Pink", function () { setHighlight("#FF69B4"); }],
-    ["highlightRed", "Highlight: Red", function () { setHighlight("#FF0000"); }],
-    ["highlightTeal", "Highlight: Teal", function () { setHighlight("#008080"); }],
-    ["highlightTurquoise", "Highlight: Turquoise", function () { setHighlight("#40E0D0"); }],
-    ["highlightViolet", "Highlight: Violet", function () { setHighlight("#EE82EE"); }],
-    ["highlightWhite", "Highlight: White", function () { setHighlight("#FFFFFF"); }],
-    ["highlightYellow", "Highlight: Yellow", function () { setHighlight("#FFFF00"); }],
-    ["hyphenation", "Hyphenation", ribbon("Layout > Hyphenation")],
-    ["hyperlink", "Hyperlink", shortcut("Ctrl+K")],
-
-    // --- I ---
-    ["icons", "Icons", ribbon("Insert > Icons")],
-    ["ignore", "Ignore (Spelling)", ribbon("Right-click > Ignore")],
-    ["ignoreAll", "Ignore All (Spelling)", ribbon("Right-click > Ignore All")],
-    ["immersiveReader", "Immersive Reader", ribbon("View > Immersive Reader")],
-    ["importTheme", "Import Theme", ribbon("Design > Themes > Browse for Themes")],
-    ["increaseFontSize", "Increase Font Size", function () {
-      if (isWord()) wordRun(function (ctx) {
-        var s = ctx.document.getSelection(); s.font.load("size");
-        return ctx.sync().then(function () { s.font.size = s.font.size + 1; return ctx.sync(); });
-      }, "Font size increased.");
-      else shortcut("Ctrl+Shift+>")();
+    ["Change Case: Sentence case", function(){
+      if(isWord()){Word.run(function(c){var s=c.document.getSelection();s.load("text");return c.sync().then(function(){var t=s.text.toLowerCase();t=t.charAt(0).toUpperCase()+t.slice(1);s.insertText(t,"Replace");return c.sync();});}).then(function(){showToast("Sentence case applied.");}).catch(function(e){showToast("Error: "+e.message);});}
+      else{showToast("Not available for this app.");}
     }],
-    ["increaseIndent", "Increase Indent", function () { changeIndent(36); }],
-    ["index", "Index", ribbon("References > Insert Index")],
-    ["info", "Info", ribbon("File > Info")],
-    ["insertAddressBlock", "Insert Address Block", ribbon("Mailings > Address Block")],
-    ["insertCaption", "Insert Caption", ribbon("References > Insert Caption")],
-    ["insertCells", "Insert Cells", ribbon("Table Layout > Insert > Insert Cells")],
-    ["insertCitation", "Insert Citation", ribbon("References > Insert Citation")],
-    ["insertColumnsLeft", "Insert Columns to the Left", ribbon("Table Layout > Insert Left")],
-    ["insertColumnsRight", "Insert Columns to the Right", ribbon("Table Layout > Insert Right")],
-    ["insertComment", "Insert Comment", shortcut("Ctrl+Alt+M")],
-    ["insertDate", "Insert Date", ribbon("Insert > Date & Time")],
-    ["insertDateTime", "Insert Date and Time", ribbon("Insert > Date & Time")],
-    ["insertEndnote", "Insert Endnote", shortcut("Ctrl+Alt+D")],
-    ["insertEquation", "Insert Equation", ribbon("Insert > Equation")],
-    ["insertField", "Insert Field", ribbon("Insert > Quick Parts > Field")],
-    ["insertFile", "Insert File", ribbon("Insert > Object > Text from File")],
-    ["insertFootnote", "Insert Footnote", shortcut("Ctrl+Alt+F")],
-    ["insertFrame", "Insert Frame", ribbon("Developer > Legacy Tools > Insert Frame")],
-    ["insertHorizontalLine", "Insert Horizontal Line", function () { insertHtml('<hr style="border:1px solid #999;width:100%">', "Line inserted."); }],
-    ["insertLeft", "Insert Left (Table)", ribbon("Table Layout > Insert Left")],
-    ["insertMergeField", "Insert Merge Field", ribbon("Mailings > Insert Merge Field")],
-    ["insertOnlinePictures", "Insert Online Pictures", ribbon("Insert > Online Pictures")],
-    ["insertOnlineVideo", "Insert Online Video", ribbon("Insert > Online Video")],
-    ["insertPageBreak", "Insert Page Break", function () { insertBreak("Page"); }],
-    ["insertPageNumber", "Insert Page Number", ribbon("Insert > Page Number")],
-    ["insertPicture", "Insert Picture", ribbon("Insert > Pictures")],
-    ["insertRight", "Insert Right (Table)", ribbon("Table Layout > Insert Right")],
-    ["insertRowsAbove", "Insert Rows Above", ribbon("Table Layout > Insert Above")],
-    ["insertRowsBelow", "Insert Rows Below", ribbon("Table Layout > Insert Below")],
-    ["insertSignatureLine", "Insert Signature Line", ribbon("Insert > Signature Line")],
-    ["insertTable", "Insert Table", function () {
-      if (isWord()) wordRun(function (ctx) {
-        ctx.document.getSelection().insertTable(3, 3, "After", [["","",""],["","",""],["","",""]]);
-        return ctx.sync();
-      }, "Table inserted.");
-      else if (isExcel()) excelRun(function (ctx) {
-        var sh = ctx.workbook.worksheets.getActiveWorksheet();
-        var r = ctx.workbook.getSelectedRange(); r.load("address");
-        return ctx.sync().then(function () { sh.tables.add(r.address, true).name = "Table_" + Date.now(); return ctx.sync(); });
-      }, "Table created.");
-      else showToast("Not available.");
+    ["Change Case: tOGGLE cASE", function(){
+      if(isWord()){Word.run(function(c){var s=c.document.getSelection();s.load("text");return c.sync().then(function(){var t=s.text.split("").map(function(ch){return ch===ch.toUpperCase()?ch.toLowerCase():ch.toUpperCase();}).join("");s.insertText(t,"Replace");return c.sync();});}).then(function(){showToast("Case toggled.");}).catch(function(e){showToast("Error: "+e.message);});}
+      else{showToast("Not available for this app.");}
     }],
-    ["insertTableOfAuthorities", "Insert Table of Authorities", ribbon("References > Insert Table of Authorities")],
-    ["insertTableOfContents", "Insert Table of Contents", ribbon("References > Table of Contents")],
-    ["insertTableOfFigures", "Insert Table of Figures", ribbon("References > Insert Table of Figures")],
-    ["insertTextFromFile", "Insert Text from File", ribbon("Insert > Object > Text from File")],
-    ["insertTime", "Insert Time", ribbon("Insert > Date & Time")],
-    ["insertWordField", "Insert Word Field", ribbon("Mailings > Rules")],
-    ["italic", "Italic", function () { toggleFont("italic"); }],
-    // --- J-K ---
-    ["justify", "Justify", function () { setAlignment("Justified"); }],
-    ["keepLinesTogether", "Keep Lines Together", ribbon("Paragraph dialog > Line and Page Breaks > Keep lines together")],
-    ["keepWithNext", "Keep with Next", ribbon("Paragraph dialog > Line and Page Breaks > Keep with next")],
-    ["kerning", "Kerning", ribbon("Home > Font dialog > Advanced > Kerning")],
-
-    // --- L ---
-    ["labels", "Labels", ribbon("Mailings > Labels")],
-    ["landscape", "Landscape", ribbon("Layout > Orientation > Landscape")],
-    ["language", "Language", ribbon("Review > Language")],
-    ["languagePreferences", "Language Preferences", ribbon("File > Options > Language")],
-    ["lastColumn", "Last Column (Table)", ribbon("Table Design > Last Column")],
-    ["launchDictation", "Launch Dictation", ribbon("Home > Dictate")],
-    ["layoutOptions", "Layout Options", ribbon("Click object > Layout Options icon")],
-    ["leftIndent", "Left Indent", function () { changeIndent(36); }],
-    ["leftTab", "Left Tab", ribbon("Ruler > Click to set left tab")],
-    ["legend", "Legend", ribbon("Chart Design > Add Chart Element > Legend")],
-    ["ligatures", "Ligatures", ribbon("Home > Font dialog > Advanced > Ligatures")],
-    ["limitFormatting", "Limit Formatting to a Selection of Styles", ribbon("Review > Restrict Editing > Formatting restrictions")],
-    ["lineAndPageBreaks", "Line and Page Breaks", ribbon("Paragraph dialog > Line and Page Breaks")],
-    ["lineBreak", "Line Break", shortcut("Shift+Enter")],
-    ["lineNumbers", "Line Numbers", ribbon("Layout > Line Numbers")],
-    ["lineSpacingSingle", "Line Spacing: Single (1.0)", function () { setLineSpacing(12); }],
-    ["lineSpacing115", "Line Spacing: 1.15", function () { setLineSpacing(13.8); }],
-    ["lineSpacing15", "Line Spacing: 1.5", function () { setLineSpacing(18); }],
-    ["lineSpacingDouble", "Line Spacing: Double (2.0)", function () { setLineSpacing(24); }],
-    ["lineSpacing25", "Line Spacing: 2.5", function () { setLineSpacing(30); }],
-    ["lineSpacing3", "Line Spacing: Triple (3.0)", function () { setLineSpacing(36); }],
-    ["linkToPrevious", "Link to Previous", ribbon("Header & Footer > Link to Previous")],
-    ["lockDocument", "Lock Document", ribbon("Review > Restrict Editing")],
-    ["lockTracking", "Lock Tracking", ribbon("Review > Track Changes > Lock Tracking")],
-    ["lowercase", "Lowercase", ribbon("Home > Change Case > lowercase")],
-
-    // --- M ---
-    ["macros", "Macros", shortcut("Alt+F8")],
-    ["mailMerge", "Mail Merge", ribbon("Mailings > Start Mail Merge")],
-    ["manageAddIns", "Manage Add-ins", ribbon("File > Options > Add-ins")],
-    ["manageSources", "Manage Sources", ribbon("References > Manage Sources")],
-    ["manageStyles", "Manage Styles", ribbon("Home > Styles pane > Manage Styles")],
-    ["manualHyphenation", "Manual Hyphenation", ribbon("Layout > Hyphenation > Manual")],
-    ["margins", "Margins", ribbon("Layout > Margins")],
-    ["markCitation", "Mark Citation", ribbon("References > Mark Citation")],
-    ["markIndexEntry", "Mark Index Entry", shortcut("Alt+Shift+X")],
-    ["markTocEntry", "Mark Table of Contents Entry", ribbon("References > Add Text")],
-    ["matchCase", "Match Case", shortcut("Ctrl+H > Match case")],
-    ["maximize", "Maximize Window", ribbon("Title bar > Maximize")],
-    ["mergeCells", "Merge Cells", ribbon("Table Layout > Merge Cells")],
-    ["mergeDocuments", "Merge Documents", ribbon("Review > Compare > Combine")],
-    ["mergeToEmail", "Merge to E-mail", ribbon("Mailings > Finish & Merge > Send E-mail")],
-    ["mergeToNewDoc", "Merge to New Document", ribbon("Mailings > Finish & Merge > Edit Individual Documents")],
-    ["mergeToPrinter", "Merge to Printer", ribbon("Mailings > Finish & Merge > Print Documents")],
-    ["minimize", "Minimize Window", ribbon("Title bar > Minimize")],
-    ["mirrorIndents", "Mirror Indents", ribbon("Layout > Paragraph dialog > Mirror indents")],
-    ["mirrorMargins", "Mirror Margins", ribbon("Layout > Margins > Mirrored")],
-    ["modifyStyle", "Modify Style", ribbon("Home > Styles > Right-click > Modify")],
-    ["moreColumns", "More Columns", ribbon("Layout > Columns > More Columns")],
-    ["moreSymbols", "More Symbols", ribbon("Insert > Symbol > More Symbols")],
-    ["moreUnderlines", "More Underlines", ribbon("Home > Font dialog > Underline style")],
-    ["moveDown", "Move Down (Outline)", ribbon("Outlining > Move Down")],
-    ["moveUp", "Move Up (Outline)", ribbon("Outlining > Move Up")],
-    ["multilevelList", "Multilevel List", ribbon("Home > Multilevel List")],
-
-    // --- N ---
-    ["navigationPane", "Navigation Pane", shortcut("Ctrl+F or View > Navigation Pane")],
-    ["new", "New", shortcut("Ctrl+N")],
-    ["newComment", "New Comment", shortcut("Ctrl+Alt+M")],
-    ["newDocument", "New Document", shortcut("Ctrl+N")],
-    ["newFromTemplate", "New from Template", ribbon("File > New")],
-    ["newMacro", "New Macro", ribbon("Developer > Macros > Create")],
-    ["newStyle", "New Style", ribbon("Home > Styles pane > New Style")],
-    ["newWindow", "New Window", ribbon("View > New Window")],
-    ["nextChange", "Next Change", ribbon("Review > Next")],
-    ["nextComment", "Next Comment", ribbon("Review > Next")],
-    ["nextFootnote", "Next Footnote", ribbon("References > Next Footnote")],
-    ["nextPage", "Next Page", shortcut("Ctrl+Page Down")],
-    ["nextPageBreak", "Next Page Section Break", function () { insertBreak("SectionNext"); }],
-    ["nextRecord", "Next Record (Mail Merge)", ribbon("Mailings > Next Record")],
-    ["noBorder", "No Border", ribbon("Home > Borders > No Border")],
-    ["noSpacing", "No Spacing (Style)", function () { setStyle("No Spacing"); }],
-    ["normal", "Normal (Style)", function () { setStyle("Normal"); }],
-    ["numberForm", "Number Form", ribbon("Home > Font dialog > Advanced > Number form")],
-    ["numberSpacing", "Number Spacing", ribbon("Home > Font dialog > Advanced > Number spacing")],
-    ["numbering", "Numbering", ribbon("Home > Numbering")],
-    // --- O ---
-    ["object", "Object", ribbon("Insert > Object")],
-    ["oddPageBreak", "Odd Page Section Break", function () { insertBreak("SectionOdd"); }],
-    ["officeClipboard", "Office Clipboard", shortcut("Ctrl+C twice or Home > Clipboard launcher")],
-    ["onlinePictures", "Online Pictures", ribbon("Insert > Online Pictures")],
-    ["open", "Open", shortcut("Ctrl+O")],
-    ["openInBrowser", "Open in Browser", ribbon("File > Info > Edit in Browser")],
-    ["openRecent", "Open Recent", ribbon("File > Open > Recent")],
-    ["options", "Options", ribbon("File > Options")],
-    ["orientation", "Orientation", ribbon("Layout > Orientation")],
-    ["outlineView", "Outline View", ribbon("View > Outline")],
-
-    // --- P ---
-    ["pageBackground", "Page Background", ribbon("Design > Page Color")],
-    ["pageBorder", "Page Border", ribbon("Design > Page Borders")],
-    ["pageBreak", "Page Break", function () { insertBreak("Page"); }],
-    ["pageBreakBefore", "Page Break Before", ribbon("Paragraph dialog > Line and Page Breaks > Page break before")],
-    ["pageColor", "Page Color", ribbon("Design > Page Color")],
-    ["pageLayoutView", "Page Layout View", ribbon("View > Print Layout")],
-    ["pageNumber", "Page Number", ribbon("Insert > Page Number")],
-    ["pageNumberFormat", "Page Number Format", ribbon("Insert > Page Number > Format Page Numbers")],
-    ["pageSetup", "Page Setup", ribbon("Layout > Page Setup launcher")],
-    ["paragraph", "Paragraph Dialog", ribbon("Home > Paragraph launcher")],
-    ["paragraphMarks", "Paragraph Marks", shortcut("Ctrl+Shift+8")],
-    ["paragraphShading", "Paragraph Shading", ribbon("Home > Shading")],
-    ["paragraphSpacingAfter0", "Paragraph Spacing After: 0 pt", function () { setSpaceAfter(0); }],
-    ["paragraphSpacingAfter6", "Paragraph Spacing After: 6 pt", function () { setSpaceAfter(6); }],
-    ["paragraphSpacingAfter8", "Paragraph Spacing After: 8 pt", function () { setSpaceAfter(8); }],
-    ["paragraphSpacingAfter10", "Paragraph Spacing After: 10 pt", function () { setSpaceAfter(10); }],
-    ["paragraphSpacingAfter12", "Paragraph Spacing After: 12 pt", function () { setSpaceAfter(12); }],
-    ["paragraphSpacingAfter24", "Paragraph Spacing After: 24 pt", function () { setSpaceAfter(24); }],
-    ["paragraphSpacingBefore0", "Paragraph Spacing Before: 0 pt", function () { setSpaceBefore(0); }],
-    ["paragraphSpacingBefore6", "Paragraph Spacing Before: 6 pt", function () { setSpaceBefore(6); }],
-    ["paragraphSpacingBefore12", "Paragraph Spacing Before: 12 pt", function () { setSpaceBefore(12); }],
-    ["paragraphSpacingBefore24", "Paragraph Spacing Before: 24 pt", function () { setSpaceBefore(24); }],
-    ["paste", "Paste", shortcut("Ctrl+V")],
-    ["pasteAll", "Paste All", shortcut("Ctrl+V (from Clipboard pane)")],
-    ["pasteAsHyperlink", "Paste as Hyperlink", ribbon("Home > Paste > Paste Special > Paste as Hyperlink")],
-    ["pasteAsPicture", "Paste as Picture", ribbon("Home > Paste > Paste Special > Picture")],
-    ["pasteAsUnformatted", "Paste as Unformatted Text", shortcut("Ctrl+Shift+V")],
-    ["pasteSpecial", "Paste Special", shortcut("Ctrl+Alt+V")],
-    ["pasteTextOnly", "Paste Text Only", shortcut("Ctrl+Shift+V")],
-    ["phoneticGuide", "Phonetic Guide", ribbon("Home > Phonetic Guide")],
-    ["pictureBorder", "Picture Border", ribbon("Picture Format > Picture Border")],
-    ["pictureEffects", "Picture Effects", ribbon("Picture Format > Picture Effects")],
-    ["pictureLayout", "Picture Layout", ribbon("Picture Format > Picture Layout")],
-    ["pictureStyles", "Picture Styles", ribbon("Picture Format > Picture Styles gallery")],
-    ["portrait", "Portrait", ribbon("Layout > Orientation > Portrait")],
-    ["position", "Position", ribbon("Shape Format > Position")],
-    ["presentOnline", "Present Online", ribbon("File > Share > Present Online")],
-    ["previewResults", "Preview Results (Mail Merge)", ribbon("Mailings > Preview Results")],
-    ["previousChange", "Previous Change", ribbon("Review > Previous")],
-    ["previousComment", "Previous Comment", ribbon("Review > Previous")],
-    ["previousRecord", "Previous Record (Mail Merge)", ribbon("Mailings > Previous Record")],
-    ["print", "Print", shortcut("Ctrl+P")],
-    ["printLayout", "Print Layout", ribbon("View > Print Layout")],
-    ["printPreview", "Print Preview", shortcut("Ctrl+F2")],
-    ["promote", "Promote (Outline)", ribbon("Outlining > Promote")],
-    ["proofingLanguage", "Proofing Language", ribbon("Review > Language > Set Proofing Language")],
-    ["properties", "Properties", ribbon("File > Info > Properties")],
-    ["protectDocument", "Protect Document", ribbon("Review > Restrict Editing")],
-    ["publish", "Publish", ribbon("File > Export")],
-
-    // --- Q ---
-    ["quickParts", "Quick Parts", ribbon("Insert > Quick Parts")],
-    ["quickPrint", "Quick Print", ribbon("File > Print > Quick Print")],
-    ["quickStyles", "Quick Styles", ribbon("Home > Styles gallery")],
-    ["quickTables", "Quick Tables", ribbon("Insert > Table > Quick Tables")],
-    ["quote", "Quote (Style)", function () { setStyle("Quote"); }],
-    // --- R ---
-    ["readMode", "Read Mode", ribbon("View > Read Mode")],
-    ["readingHighlight", "Reading Highlight", ribbon("Home > Find > Reading Highlight")],
-    ["reapplyStyle", "Reapply Style", ribbon("Home > Styles > Right-click > Reapply")],
-    ["recentDocuments", "Recent Documents", ribbon("File > Open > Recent")],
-    ["recordMacro", "Record Macro", ribbon("Developer > Record Macro or View > Macros > Record Macro")],
-    ["redo", "Redo", shortcut("Ctrl+Y")],
-    ["reject", "Reject Change", ribbon("Review > Reject")],
-    ["rejectAllChanges", "Reject All Changes", ribbon("Review > Reject > Reject All Changes")],
-    ["removeAllFormatting", "Remove All Formatting", function () { clearFormatting(); }],
-    ["removeBackground", "Remove Background", ribbon("Picture Format > Remove Background")],
-    ["removeContentControl", "Remove Content Control", ribbon("Right-click control > Remove Content Control")],
-    ["removeHyperlink", "Remove Hyperlink", ribbon("Right-click link > Remove Hyperlink")],
-    ["removeSpaceAfter", "Remove Space After Paragraph", function () { setSpaceAfter(0); }],
-    ["removeSpaceBefore", "Remove Space Before Paragraph", function () { setSpaceBefore(0); }],
-    ["removeTableOfContents", "Remove Table of Contents", ribbon("References > Table of Contents > Remove Table of Contents")],
-    ["removeWatermark", "Remove Watermark", ribbon("Design > Watermark > Remove Watermark")],
-    ["repeat", "Repeat", shortcut("Ctrl+Y or F4")],
-    ["repeatHeaderRows", "Repeat Header Rows", ribbon("Table Layout > Repeat Header Rows")],
-    ["replace", "Replace", shortcut("Ctrl+H")],
-    ["replaceAll", "Replace All", shortcut("Ctrl+H > Replace All")],
-    ["research", "Research", ribbon("Review > Research")],
-    ["resetCharFormatting", "Reset Character Formatting", shortcut("Ctrl+Space")],
-    ["resetGraphic", "Reset Graphic", ribbon("Picture Format > Reset Picture")],
-    ["resetParFormatting", "Reset Paragraph Formatting", shortcut("Ctrl+Q")],
-    ["resetPicture", "Reset Picture", ribbon("Picture Format > Reset Picture")],
-    ["resetPictureSize", "Reset Picture Size", ribbon("Picture Format > Reset Picture > Reset Picture & Size")],
-    ["restartNumbering", "Restart Numbering", ribbon("Right-click list > Restart at 1")],
-    ["restrictEditing", "Restrict Editing", ribbon("Review > Restrict Editing")],
-    ["restrictFormatting", "Restrict Formatting", ribbon("Review > Restrict Editing > Formatting restrictions")],
-    ["reviewingPane", "Reviewing Pane", ribbon("Review > Reviewing Pane")],
-    ["reviewingPaneHorizontal", "Reviewing Pane Horizontal", ribbon("Review > Reviewing Pane > Horizontal")],
-    ["reviewingPaneVertical", "Reviewing Pane Vertical", ribbon("Review > Reviewing Pane > Vertical")],
-    ["rightIndent", "Right Indent", ribbon("Layout > Paragraph > Right indent")],
-    ["rightTab", "Right Tab", ribbon("Ruler > Right tab stop")],
-    ["rotateLeft90", "Rotate Left 90", ribbon("Shape Format > Rotate > Rotate Left 90")],
-    ["rotateRight90", "Rotate Right 90", ribbon("Shape Format > Rotate > Rotate Right 90")],
-    ["ruler", "Ruler", ribbon("View > Ruler")],
-    ["rules", "Rules (Mail Merge)", ribbon("Mailings > Rules")],
-
-    // --- S ---
-    ["save", "Save", function () {
-      Office.context.document.save(Office.AsyncResultStatus || {}, function (r) {
-        if (r.status === Office.AsyncResultStatus.Failed) showToast("Save failed: " + r.error.message);
-        else showToast("Saved!");
+    ["Change Chart Type", function(){ribbon("Chart Design","Change Chart Type");}],
+    ["Change Colors (Chart)", function(){ribbon("Chart Design","Change Colors");}],
+    ["Change Picture", function(){ribbon("Picture Format","Change Picture");}],
+    ["Change Shape", function(){ribbon("Shape Format","Edit Shape > Change Shape");}],
+    ["Character Spacing: Expanded", function(){ribbon("Home","Font dialog > Advanced > Spacing > Expanded");}],
+    ["Character Spacing: Condensed", function(){ribbon("Home","Font dialog > Advanced > Spacing > Condensed");}],
+    ["Check Compatibility", function(){ribbon("File","Info > Check for Issues > Compatibility");}],
+    ["Clear All Formatting", function(){
+      if(isWord()){Word.run(function(c){c.document.getSelection().font.set({bold:false,italic:false,underline:"None",strikethrough:false,superscript:false,subscript:false,color:"#000000",highlightColor:null});return c.sync();}).then(function(){showToast("Formatting cleared.");}).catch(function(e){showToast("Error: "+e.message);});}
+      else{shortcut("Ctrl+Space");}
+    }],
+    ["Clipboard Pane", function(){shortcut("Ctrl+C twice (or Home > Clipboard launcher)");}],
+    ["Close", function(){shortcut("Ctrl+W");}],
+    ["Close All", function(){ribbon("File","Close All");}],
+    ["Close Header and Footer", function(){ribbon("Header & Footer","Close Header and Footer");}],
+    ["Collapse All Headings", function(){ribbon("View","Outline > Collapse All");}],
+    ["Color: Aqua", function(){setFontColor("#00FFFF");}],
+    ["Color: Black", function(){setFontColor("#000000");}],
+    ["Color: Blue", function(){setFontColor("#0000FF");}],
+    ["Color: Brown", function(){setFontColor("#993300");}],
+    ["Color: Dark Blue", function(){setFontColor("#000080");}],
+    ["Color: Dark Cyan", function(){setFontColor("#008080");}],
+    ["Color: Dark Gray", function(){setFontColor("#404040");}],
+    ["Color: Dark Green", function(){setFontColor("#006400");}],
+    ["Color: Dark Magenta", function(){setFontColor("#800080");}],
+    ["Color: Dark Red", function(){setFontColor("#8B0000");}],
+    ["Color: Dark Yellow", function(){setFontColor("#808000");}],
+    ["Color: Gold", function(){setFontColor("#FFD700");}],
+    ["Color: Gray", function(){setFontColor("#808080");}],
+    ["Color: Green", function(){setFontColor("#008000");}],
+    ["Color: Indigo", function(){setFontColor("#4B0082");}],
+    ["Color: Lavender", function(){setFontColor("#E6E6FA");}],
+    ["Color: Light Blue", function(){setFontColor("#ADD8E6");}],
+    ["Color: Light Gray", function(){setFontColor("#C0C0C0");}],
+    ["Color: Light Green", function(){setFontColor("#90EE90");}],
+    ["Color: Lime", function(){setFontColor("#00FF00");}],
+    ["Color: Magenta", function(){setFontColor("#FF00FF");}],
+    ["Color: Maroon", function(){setFontColor("#800000");}],
+    ["Color: Navy", function(){setFontColor("#000080");}],
+    ["Color: Olive", function(){setFontColor("#808000");}],
+    ["Color: Orange", function(){setFontColor("#FFA500");}],
+    ["Color: Peach", function(){setFontColor("#FFDAB9");}],
+    ["Color: Pink", function(){setFontColor("#FFC0CB");}],
+    ["Color: Plum", function(){setFontColor("#DDA0DD");}],
+    ["Color: Purple", function(){setFontColor("#800080");}],
+    ["Color: Red", function(){setFontColor("#FF0000");}],
+    ["Color: Rose", function(){setFontColor("#FF007F");}],
+    ["Color: Silver", function(){setFontColor("#C0C0C0");}],
+    ["Color: Sky Blue", function(){setFontColor("#87CEEB");}],
+    ["Color: Tan", function(){setFontColor("#D2B48C");}],
+    ["Color: Teal", function(){setFontColor("#008080");}],
+    ["Color: Turquoise", function(){setFontColor("#40E0D0");}],
+    ["Color: Violet", function(){setFontColor("#EE82EE");}],
+    ["Color: White", function(){setFontColor("#FFFFFF");}],
+    ["Color: Yellow", function(){setFontColor("#FFFF00");}],
+    ["Columns: One", function(){ribbon("Layout","Columns > One");}],
+    ["Columns: Two", function(){ribbon("Layout","Columns > Two");}],
+    ["Columns: Three", function(){ribbon("Layout","Columns > Three");}],
+    ["Combine Documents", function(){ribbon("Review","Compare > Combine");}],
+    ["Compare Documents", function(){ribbon("Review","Compare > Compare");}],
+    ["Compress Pictures", function(){ribbon("Picture Format","Compress Pictures");}],
+    ["Content Control: Plain Text", function(){ribbon("Developer","Plain Text Content Control");}],
+    ["Content Control: Rich Text", function(){ribbon("Developer","Rich Text Content Control");}],
+    ["Content Control: Picture", function(){ribbon("Developer","Picture Content Control");}],
+    ["Content Control: Combo Box", function(){ribbon("Developer","Combo Box Content Control");}],
+    ["Content Control: Drop-Down List", function(){ribbon("Developer","Drop-Down List Content Control");}],
+    ["Content Control: Date Picker", function(){ribbon("Developer","Date Picker Content Control");}],
+    ["Content Control: Check Box", function(){ribbon("Developer","Check Box Content Control");}],
+    ["Content Control: Repeating Section", function(){ribbon("Developer","Repeating Section Content Control");}],
+    ["Convert Table to Text", function(){ribbon("Table Layout","Convert to Text");}],
+    ["Convert Text to Table", function(){ribbon("Insert","Table > Convert Text to Table");}],
+    ["Copy", function(){shortcut("Ctrl+C");}],
+    ["Cover Page", function(){ribbon("Insert","Cover Page");}],
+    ["Create AutoText", function(){shortcut("Alt+F3");}],
+    ["Cross-reference", function(){ribbon("References","Cross-reference");}],
+    ["Custom Margins", function(){ribbon("Layout","Margins > Custom Margins");}],
+    ["Customize Keyboard", function(){ribbon("File","Options > Customize Ribbon > Customize...");}],
+    ["Customize Quick Access Toolbar", function(){ribbon("File","Options > Quick Access Toolbar");}],
+    ["Customize Ribbon", function(){ribbon("File","Options > Customize Ribbon");}],
+    ["Cut", function(){shortcut("Ctrl+X");}],
+    ["Date and Time", function(){ribbon("Insert","Date & Time");}],
+    ["Decrease Font Size", function(){
+      if(isWord()){Word.run(function(c){var s=c.document.getSelection();s.font.load("size");return c.sync().then(function(){s.font.size=Math.max(1,s.font.size-1);return c.sync();});}).then(function(){showToast("Font size decreased.");}).catch(function(e){showToast("Error: "+e.message);});}
+      else{shortcut("Ctrl+Shift+<");}
+    }],
+    ["Decrease Indent", function(){setIndent("left",0);}],
+    ["Decrease List Level", function(){shortcut("Shift+Tab in list");}],
+    ["Define New Bullet", function(){ribbon("Home","Bullets > Define New Bullet");}],
+    ["Define New List Style", function(){ribbon("Home","Multilevel List > Define New List Style");}],
+    ["Define New Multilevel List", function(){ribbon("Home","Multilevel List > Define New Multilevel List");}],
+    ["Define New Number Format", function(){ribbon("Home","Numbering > Define New Number Format");}],
+    ["Delete", function(){shortcut("Delete key");}],
+    ["Delete All Comments in Document", function(){ribbon("Review","Delete > Delete All Comments");}],
+    ["Delete Cells", function(){ribbon("Table Layout","Delete > Delete Cells");}],
+    ["Delete Columns", function(){ribbon("Table Layout","Delete > Delete Columns");}],
+    ["Delete Comment", function(){ribbon("Review","Delete Comment");}],
+    ["Delete Page", function(){ribbon("Select page content, then Delete");}],
+    ["Delete Rows", function(){ribbon("Table Layout","Delete > Delete Rows");}],
+    ["Delete Table", function(){ribbon("Table Layout","Delete > Delete Table");}],
+    ["Demote (Outline)", function(){ribbon("Outlining","Demote");}],
+    ["Demote to Body Text", function(){ribbon("Outlining","Demote to Body Text");}],
+    ["Design Mode", function(){ribbon("Developer","Design Mode");}],
+    ["Different First Page (Header/Footer)", function(){ribbon("Header & Footer","Different First Page");}],
+    ["Different Odd & Even Pages", function(){ribbon("Header & Footer","Different Odd & Even Pages");}],
+    ["Distribute Columns Evenly", function(){ribbon("Table Layout","Distribute Columns");}],
+    ["Distribute Rows Evenly", function(){ribbon("Table Layout","Distribute Rows");}],
+    ["Document Inspector", function(){ribbon("File","Info > Check for Issues > Inspect Document");}],
+    ["Document Protection", function(){ribbon("Review","Restrict Editing");}],
+    ["Don't Hyphenate", function(){ribbon("Layout","Hyphenation > None");}],
+    ["Double Strikethrough", function(){ribbon("Home","Font dialog > Effects > Double Strikethrough");}],
+    ["Double Underline", function(){shortcut("Ctrl+Shift+D");}],
+    ["Draft View", function(){ribbon("View","Draft");}],
+    ["Draw Table", function(){ribbon("Insert","Table > Draw Table");}],
+    ["Draw Text Box", function(){ribbon("Insert","Text Box > Draw Text Box");}],
+    ["Drawing Canvas", function(){ribbon("Insert","Shapes > New Drawing Canvas");}],
+    ["Drop Cap: Dropped", function(){ribbon("Insert","Drop Cap > Dropped");}],
+    ["Drop Cap: In Margin", function(){ribbon("Insert","Drop Cap > In Margin");}],
+    ["Drop Cap: None", function(){ribbon("Insert","Drop Cap > None");}],
+    ["Edit Header", function(){ribbon("Insert","Header > Edit Header");}],
+    ["Edit Footer", function(){ribbon("Insert","Footer > Edit Footer");}],
+    ["Editing Restrictions", function(){ribbon("Review","Restrict Editing");}],
+    ["Editor", function(){ribbon("Home","Editor");}],
+    ["Effects (Theme)", function(){ribbon("Design","Effects");}],
+    ["Email as Attachment", function(){ribbon("File","Share > Email");}],
+    ["Embed Fonts", function(){ribbon("File","Options > Save > Embed Fonts");}],
+    ["Enclose Characters", function(){ribbon("Home","Enclose Characters (Asian Layout)");}],
+    ["Encrypt with Password", function(){ribbon("File","Info > Protect Document > Encrypt with Password");}],
+    ["Endnote: Insert", function(){shortcut("Ctrl+Alt+D");}],
+    ["Envelopes", function(){ribbon("Mailings","Envelopes");}],
+    ["Equation", function(){shortcut("Alt+=");}],
+    ["Eraser (Table)", function(){ribbon("Table Layout","Eraser");}],
+    ["Even Page Section Break", function(){wordInsertBreak("EvenPage");}],
+    ["Expand All Headings", function(){ribbon("View","Outline > Expand All");}],
+    ["Export to PDF/XPS", function(){ribbon("File","Export > Create PDF/XPS");}],
+    ["Field", function(){ribbon("Insert","Quick Parts > Field");}],
+    ["Field Codes: Toggle", function(){shortcut("Alt+F9");}],
+    ["File: New", function(){shortcut("Ctrl+N");}],
+    ["File: Open", function(){shortcut("Ctrl+O");}],
+    ["File: Print", function(){shortcut("Ctrl+P");}],
+    ["File: Save", function(){
+      Office.context.document.save(Office.AsyncResultStatus||{},function(r){
+        if(r.status===Office.AsyncResultStatus.Failed){showToast("Save failed: "+r.error.message);}else{showToast("Saved!");}
       });
     }],
-    ["saveAs", "Save As", shortcut("F12")],
-    ["saveAsPdf", "Save As PDF", ribbon("File > Export > Create PDF/XPS")],
-    ["saveAsTemplate", "Save As Template", ribbon("File > Save As > Word Template")],
-    ["saveCurrentTheme", "Save Current Theme", ribbon("Design > Themes > Save Current Theme")],
-    ["screenClipping", "Screen Clipping", ribbon("Insert > Screenshot > Screen Clipping")],
-    ["screenshot", "Screenshot", ribbon("Insert > Screenshot")],
-    ["search", "Search", shortcut("Ctrl+F")],
-    ["selectAll", "Select All", function () {
-      if (isWord()) wordRun(function (ctx) { ctx.document.body.getRange().select(); return ctx.sync(); }, "All selected.");
-      else shortcut("Ctrl+A")();
+    ["File: Save As", function(){shortcut("F12 or Ctrl+Shift+S");}],
+    ["File: Close", function(){shortcut("Ctrl+W");}],
+    ["File: Info", function(){ribbon("File","Info");}],
+    ["File: Options", function(){ribbon("File","Options");}],
+    ["Find", function(){shortcut("Ctrl+F");}],
+    ["Find and Replace", function(){shortcut("Ctrl+H");}],
+    ["Find Next", function(){shortcut("Ctrl+G or F5");}],
+    ["First Line Indent", function(){setIndent("first",36);}],
+    ["Flip Horizontal", function(){ribbon("Shape Format","Rotate > Flip Horizontal");}],
+    ["Flip Vertical", function(){ribbon("Shape Format","Rotate > Flip Vertical");}],
+    ["Focus Mode", function(){ribbon("View","Focus");}],
+    ["Font: Arial", function(){setFontName("Arial");}],
+    ["Font: Arial Black", function(){setFontName("Arial Black");}],
+    ["Font: Calibri", function(){setFontName("Calibri");}],
+    ["Font: Calibri Light", function(){setFontName("Calibri Light");}],
+    ["Font: Cambria", function(){setFontName("Cambria");}],
+    ["Font: Century Gothic", function(){setFontName("Century Gothic");}],
+    ["Font: Comic Sans MS", function(){setFontName("Comic Sans MS");}],
+    ["Font: Consolas", function(){setFontName("Consolas");}],
+    ["Font: Constantia", function(){setFontName("Constantia");}],
+    ["Font: Corbel", function(){setFontName("Corbel");}],
+    ["Font: Courier New", function(){setFontName("Courier New");}],
+    ["Font: Franklin Gothic", function(){setFontName("Franklin Gothic Medium");}],
+    ["Font: Garamond", function(){setFontName("Garamond");}],
+    ["Font: Georgia", function(){setFontName("Georgia");}],
+    ["Font: Impact", function(){setFontName("Impact");}],
+    ["Font: Lucida Console", function(){setFontName("Lucida Console");}],
+    ["Font: Lucida Sans", function(){setFontName("Lucida Sans");}],
+    ["Font: Palatino Linotype", function(){setFontName("Palatino Linotype");}],
+    ["Font: Segoe UI", function(){setFontName("Segoe UI");}],
+    ["Font: Tahoma", function(){setFontName("Tahoma");}],
+    ["Font: Times New Roman", function(){setFontName("Times New Roman");}],
+    ["Font: Trebuchet MS", function(){setFontName("Trebuchet MS");}],
+    ["Font: Verdana", function(){setFontName("Verdana");}],
+    ["Font Dialog", function(){shortcut("Ctrl+D");}],
+    ["Font Size: 8", function(){setFontSize(8);}],
+    ["Font Size: 9", function(){setFontSize(9);}],
+    ["Font Size: 10", function(){setFontSize(10);}],
+    ["Font Size: 10.5", function(){setFontSize(10.5);}],
+    ["Font Size: 11", function(){setFontSize(11);}],
+    ["Font Size: 12", function(){setFontSize(12);}],
+    ["Font Size: 14", function(){setFontSize(14);}],
+    ["Font Size: 16", function(){setFontSize(16);}],
+    ["Font Size: 18", function(){setFontSize(18);}],
+    ["Font Size: 20", function(){setFontSize(20);}],
+    ["Font Size: 22", function(){setFontSize(22);}],
+    ["Font Size: 24", function(){setFontSize(24);}],
+    ["Font Size: 26", function(){setFontSize(26);}],
+    ["Font Size: 28", function(){setFontSize(28);}],
+    ["Font Size: 36", function(){setFontSize(36);}],
+    ["Font Size: 48", function(){setFontSize(48);}],
+    ["Font Size: 72", function(){setFontSize(72);}],
+    ["Footer", function(){ribbon("Insert","Footer");}],
+    ["Footnote: Insert", function(){shortcut("Ctrl+Alt+F");}],
+    ["Format Painter", function(){shortcut("Ctrl+Shift+C to copy, Ctrl+Shift+V to paste format");}],
+    ["Formatting Marks (Show/Hide)", function(){shortcut("Ctrl+Shift+8 or Ctrl+*");}],
+    ["Full Screen Reading", function(){ribbon("View","Read Mode");}],
+    ["Go Back", function(){shortcut("Alt+Left Arrow");}],
+    ["Go Forward", function(){shortcut("Alt+Right Arrow");}],
+    ["Go To", function(){shortcut("Ctrl+G or F5");}],
+    ["Go to Bookmark", function(){shortcut("Ctrl+Shift+F5");}],
+    ["Go to Header", function(){ribbon("Insert","Header > Edit Header");}],
+    ["Go to Footer", function(){ribbon("Insert","Footer > Edit Footer");}],
+    ["Go to Next Comment", function(){ribbon("Review","Next Comment");}],
+    ["Go to Previous Comment", function(){ribbon("Review","Previous Comment");}],
+    ["Go to Next Section", function(){ribbon("Navigate: Ctrl+G > Section");}],
+    ["Greeting Line (Mail Merge)", function(){ribbon("Mailings","Greeting Line");}],
+    ["Gridlines (View)", function(){ribbon("View","Gridlines");}],
+    ["Grow Font", function(){shortcut("Ctrl+Shift+>");}],
+    ["Group Objects", function(){ribbon("Shape Format","Group > Group");}],
+    ["Hanging Indent", function(){setIndent("first",-36);}],
+    ["Header", function(){ribbon("Insert","Header");}],
+    ["Heading 1 Style", function(){
+      if(isWord()){Word.run(function(c){c.document.getSelection().style="Heading 1";return c.sync();}).then(function(){showToast("Heading 1 applied.");}).catch(function(e){showToast("Error: "+e.message);});}
+      else{shortcut("Ctrl+Alt+1");}
     }],
-    ["selectCell", "Select Cell", ribbon("Table Layout > Select > Select Cell")],
-    ["selectColumn", "Select Column", ribbon("Table Layout > Select > Select Column")],
-    ["selectRow", "Select Row", ribbon("Table Layout > Select > Select Row")],
-    ["selectTable", "Select Table", ribbon("Table Layout > Select > Select Table")],
-    ["selectionPane", "Selection Pane", ribbon("Shape Format > Selection Pane")],
-    ["sendAsAttachment", "Send as Attachment", ribbon("File > Share > Email > Send as Attachment")],
-    ["sendAsPdf", "Send as PDF", ribbon("File > Share > Email > Send as PDF")],
-    ["sendBackward", "Send Backward", ribbon("Shape Format > Send Backward")],
-    ["sendBehindText", "Send Behind Text", ribbon("Shape Format > Wrap Text > Behind Text")],
-    ["sendToBack", "Send to Back", ribbon("Shape Format > Send to Back")],
-    ["sentenceCase", "Sentence Case", ribbon("Home > Change Case > Sentence case.")],
-    ["setLanguage", "Set Language", ribbon("Review > Language > Set Proofing Language")],
-    ["setNumberingValue", "Set Numbering Value", ribbon("Right-click list > Set Numbering Value")],
-    ["shading", "Shading", ribbon("Home > Shading")],
-    ["shapeFill", "Shape Fill", ribbon("Shape Format > Shape Fill")],
-    ["shapeHeight", "Shape Height", ribbon("Shape Format > Height")],
-    ["shapeOutline", "Shape Outline", ribbon("Shape Format > Shape Outline")],
-    ["shapeStyles", "Shape Styles", ribbon("Shape Format > Shape Styles gallery")],
-    ["shapeWidth", "Shape Width", ribbon("Shape Format > Width")],
-    ["shapes", "Shapes", ribbon("Insert > Shapes")],
-    ["share", "Share", ribbon("File > Share")],
-    ["showAll", "Show All", shortcut("Ctrl+Shift+8")],
-    ["showComments", "Show Comments", ribbon("Review > Show Comments")],
-    ["showHide", "Show/Hide Paragraph Marks", shortcut("Ctrl+Shift+8")],
-    ["showMarkup", "Show Markup", ribbon("Review > Show Markup")],
-    ["showNotes", "Show Notes", ribbon("References > Show Notes")],
-    ["showRevisionsBalloons", "Show Revisions in Balloons", ribbon("Review > Show Markup > Balloons")],
-    ["shrinkFont", "Shrink Font", shortcut("Ctrl+Shift+<")],
-    ["shrinkOnePage", "Shrink One Page", ribbon("Print Preview > Shrink One Page")],
-    ["simpleMarkup", "Simple Markup", ribbon("Review > Display for Review > Simple Markup")],
-    ["smallCaps", "Small Caps", shortcut("Ctrl+Shift+K")],
-    ["smartArt", "SmartArt", ribbon("Insert > SmartArt")],
-    ["snapToGrid", "Snap to Grid", ribbon("Shape Format > Align > Snap to Grid")],
-    ["sort", "Sort", ribbon("Home > Sort")],
-    ["sortAscending", "Sort Ascending", ribbon("Home > Sort (A-Z)")],
-    ["sortDescending", "Sort Descending", ribbon("Home > Sort (Z-A)")],
-    ["spaceAfter", "Space After", ribbon("Layout > Spacing After")],
-    ["spaceBefore", "Space Before", ribbon("Layout > Spacing Before")],
-    ["specialCharacters", "Special Characters", ribbon("Insert > Symbol > More Symbols > Special Characters")],
-    ["spelling", "Spelling and Grammar", shortcut("F7")],
-    ["splitCells", "Split Cells", ribbon("Table Layout > Split Cells")],
-    ["splitTable", "Split Table", ribbon("Table Layout > Split Table")],
-    ["splitWindow", "Split Window", ribbon("View > Split")],
-    ["startEnforcingProtection", "Start Enforcing Protection", ribbon("Review > Restrict Editing > Yes, Start Enforcing Protection")],
-    ["startMailMerge", "Start Mail Merge", ribbon("Mailings > Start Mail Merge")],
-    ["startTracking", "Start Tracking", ribbon("Review > Track Changes")],
-    ["strikethrough", "Strikethrough", function () { toggleFont("strikethrough"); }],
-    ["styleHeading1", "Style: Heading 1", function () { setStyle("Heading 1"); }],
-    ["styleHeading2", "Style: Heading 2", function () { setStyle("Heading 2"); }],
-    ["styleHeading3", "Style: Heading 3", function () { setStyle("Heading 3"); }],
-    ["styleIntenseEmphasis", "Style: Intense Emphasis", function () { setStyle("Intense Emphasis"); }],
-    ["styleIntenseQuote", "Style: Intense Quote", function () { setStyle("Intense Quote"); }],
-    ["styleIntenseReference", "Style: Intense Reference", function () { setStyle("Intense Reference"); }],
-    ["styleListParagraph", "Style: List Paragraph", function () { setStyle("List Paragraph"); }],
-    ["styleNormal", "Style: Normal", function () { setStyle("Normal"); }],
-    ["styleSubtitle", "Style: Subtitle", function () { setStyle("Subtitle"); }],
-    ["styleSubtleEmphasis", "Style: Subtle Emphasis", function () { setStyle("Subtle Emphasis"); }],
-    ["styleSubtleReference", "Style: Subtle Reference", function () { setStyle("Subtle Reference"); }],
-    ["styleTitle", "Style: Title", function () { setStyle("Title"); }],
-    ["stylesDialog", "Styles Dialog", ribbon("Home > Styles launcher")],
-    ["stylisticSets", "Stylistic Sets", ribbon("Home > Font dialog > Advanced > Stylistic sets")],
-    ["subscript", "Subscript", function () {
-      if (isWord()) wordRun(function (ctx) {
-        var s = ctx.document.getSelection(); s.font.load("subscript");
-        return ctx.sync().then(function () { s.font.subscript = !s.font.subscript; return ctx.sync(); });
-      }, "Subscript toggled.");
-      else showToast("Not available.");
+    ["Heading 2 Style", function(){
+      if(isWord()){Word.run(function(c){c.document.getSelection().style="Heading 2";return c.sync();}).then(function(){showToast("Heading 2 applied.");}).catch(function(e){showToast("Error: "+e.message);});}
+      else{shortcut("Ctrl+Alt+2");}
     }],
-    ["sumFormula", "SUM Formula", ribbon("Table Layout > Formula > =SUM(ABOVE)")],
-    ["superscript", "Superscript", function () {
-      if (isWord()) wordRun(function (ctx) {
-        var s = ctx.document.getSelection(); s.font.load("superscript");
-        return ctx.sync().then(function () { s.font.superscript = !s.font.superscript; return ctx.sync(); });
-      }, "Superscript toggled.");
-      else showToast("Not available.");
+    ["Heading 3 Style", function(){
+      if(isWord()){Word.run(function(c){c.document.getSelection().style="Heading 3";return c.sync();}).then(function(){showToast("Heading 3 applied.");}).catch(function(e){showToast("Error: "+e.message);});}
+      else{shortcut("Ctrl+Alt+3");}
     }],
-    ["switchWindows", "Switch Windows", ribbon("View > Switch Windows")],
-    ["symbol", "Symbol", ribbon("Insert > Symbol")],
-    ["symbolDialog", "Symbol Dialog", ribbon("Insert > Symbol > More Symbols")],
-    ["synonyms", "Synonyms", ribbon("Right-click > Synonyms or Review > Thesaurus")],
-    // --- T ---
-    ["tableDesign", "Table Design", ribbon("Table Design tab")],
-    ["tableGridlines", "Table Gridlines", ribbon("Table Layout > View Gridlines")],
-    ["tableLayout", "Table Layout", ribbon("Table Layout tab")],
-    ["tableOfAuthorities", "Table of Authorities", ribbon("References > Insert Table of Authorities")],
-    ["tableOfContents", "Table of Contents", ribbon("References > Table of Contents")],
-    ["tableOfFigures", "Table of Figures", ribbon("References > Insert Table of Figures")],
-    ["tableProperties", "Table Properties", ribbon("Table Layout > Properties")],
-    ["tableStyles", "Table Styles", ribbon("Table Design > Table Styles gallery")],
-    ["tabs", "Tabs", ribbon("Paragraph dialog > Tabs")],
-    ["templates", "Templates", ribbon("Developer > Document Template")],
-    ["textBox", "Text Box", ribbon("Insert > Text Box")],
-    ["textDirection", "Text Direction", ribbon("Table Layout > Text Direction")],
-    ["textEffects", "Text Effects and Typography", ribbon("Home > Text Effects and Typography")],
-    ["textFill", "Text Fill", ribbon("WordArt Format > Text Fill")],
-    ["textHighlightColor", "Text Highlight Color", ribbon("Home > Text Highlight Color")],
-    ["textOutline", "Text Outline", ribbon("WordArt Format > Text Outline")],
-    ["textToSpeech", "Text to Speech", ribbon("Review > Read Aloud")],
-    ["textWrapping", "Text Wrapping", ribbon("Shape Format > Wrap Text")],
-    ["themeColors", "Theme Colors", ribbon("Design > Colors")],
-    ["themeEffects", "Theme Effects", ribbon("Design > Effects")],
-    ["themeFonts", "Theme Fonts", ribbon("Design > Fonts")],
-    ["themes", "Themes", ribbon("Design > Themes")],
-    ["thesaurus", "Thesaurus", shortcut("Shift+F7")],
-    ["titleCase", "Title Case", ribbon("Home > Change Case > Capitalize Each Word")],
-    ["toggleCase", "Toggle Case", ribbon("Home > Change Case > tOGGLE cASE")],
-    ["toggleFieldCodes", "Toggle Field Codes", shortcut("Alt+F9")],
-    ["toggleFullScreen", "Toggle Full Screen", shortcut("Alt+F11 or View > Read Mode")],
-    ["totalRow", "Total Row (Table)", ribbon("Table Design > Total Row")],
-    ["trackChanges", "Track Changes", shortcut("Ctrl+Shift+E")],
-    ["trackChangesOptions", "Track Changes Options", ribbon("Review > Track Changes > Change Tracking Options")],
-    ["translate", "Translate", ribbon("Review > Translate")],
-    ["translateDocument", "Translate Document", ribbon("Review > Translate > Translate Document")],
-    ["translateSelectedText", "Translate Selected Text", ribbon("Review > Translate > Translate Selection")],
-    ["trendline", "Trendline", ribbon("Chart Design > Add Chart Element > Trendline")],
-    ["trustCenterSettings", "Trust Center Settings", ribbon("File > Options > Trust Center > Trust Center Settings")],
-    ["twoPages", "Two Pages", ribbon("View > Multiple Pages")],
-
-    // --- U ---
-    ["underline", "Underline", function () {
-      if (isWord()) wordRun(function (ctx) {
-        var s = ctx.document.getSelection(); s.font.load("underline");
-        return ctx.sync().then(function () { s.font.underline = s.font.underline === "None" ? "Single" : "None"; return ctx.sync(); });
-      }, "Underline toggled.");
-      else toggleFont("underline");
+    ["Heading 4 Style", function(){
+      if(isWord()){Word.run(function(c){c.document.getSelection().style="Heading 4";return c.sync();}).then(function(){showToast("Heading 4 applied.");}).catch(function(e){showToast("Error: "+e.message);});}
+      else{ribbon("Home","Styles > Heading 4");}
     }],
-    ["underlineColor", "Underline Color", ribbon("Home > Font dialog > Underline color")],
-    ["underlineStyle", "Underline Style", ribbon("Home > Font dialog > Underline style")],
-    ["undo", "Undo", shortcut("Ctrl+Z")],
-    ["ungroup", "Ungroup", ribbon("Shape Format > Group > Ungroup")],
-    ["updateAllFields", "Update All Fields", shortcut("Ctrl+A then F9")],
-    ["updateBibliography", "Update Bibliography", ribbon("References > Update Citations and Bibliography")],
-    ["updateField", "Update Field", shortcut("F9")],
-    ["updateIndex", "Update Index", ribbon("References > Update Index")],
-    ["updateLabels", "Update Labels", ribbon("Mailings > Update Labels")],
-    ["updateStyleToMatch", "Update Style to Match Selection", ribbon("Home > Styles > Right-click > Update to Match Selection")],
-    ["updateTableOfContents", "Update Table of Contents", ribbon("References > Update Table")],
-    ["updateTableOfFigures", "Update Table of Figures", ribbon("References > Update Table")],
-    ["uppercase", "UPPERCASE", ribbon("Home > Change Case > UPPERCASE")],
-
-    // --- V ---
-    ["verticalAlignment", "Vertical Alignment", ribbon("Layout > Page Setup > Layout tab > Vertical alignment")],
-    ["viewCode", "View Code (VBA)", shortcut("Alt+F11")],
-    ["viewFieldCodes", "View Field Codes", shortcut("Alt+F9")],
-    ["viewFootnotes", "View Footnotes", ribbon("References > Show Notes")],
-    ["viewGridlines", "View Gridlines", ribbon("View > Gridlines")],
-    ["viewHeader", "View Header", ribbon("Insert > Header > Edit Header")],
-    ["viewMacros", "View Macros", shortcut("Alt+F8")],
-    ["viewMergedData", "View Merged Data", ribbon("Mailings > Preview Results")],
-    ["viewRuler", "View Ruler", ribbon("View > Ruler")],
-    ["viewSideBySide", "View Side by Side", ribbon("View > View Side by Side")],
-    ["visualBasic", "Visual Basic", shortcut("Alt+F11")],
-
-    // --- W ---
-    ["watermark", "Watermark", ribbon("Design > Watermark")],
-    ["webLayout", "Web Layout", ribbon("View > Web Layout")],
-    ["wholePage", "Whole Page", ribbon("View > One Page")],
-    ["widowOrphanControl", "Widow/Orphan Control", ribbon("Paragraph dialog > Line and Page Breaks > Widow/Orphan control")],
-    ["wordArt", "WordArt", ribbon("Insert > WordArt")],
-    ["wordArtStyles", "WordArt Styles", ribbon("WordArt Format > WordArt Styles gallery")],
-    ["wordCount", "Word Count", shortcut("Ctrl+Shift+G or Review > Word Count")],
-    ["wordOptions", "Word Options", ribbon("File > Options")],
-    ["wordWrap", "Word Wrap", ribbon("Home > Paragraph > Allow line wrapping within cells")],
-    ["wrapText", "Wrap Text", ribbon("Shape Format > Wrap Text")],
-
-    // --- X ---
-    ["xmlMappingPane", "XML Mapping Pane", ribbon("Developer > XML Mapping Pane")],
-    ["xmlSchema", "XML Schema", ribbon("Developer > Schema")],
-
-    // --- Z ---
-    ["zoom100", "Zoom 100%", ribbon("View > Zoom > 100%")],
-    ["zoomDialog", "Zoom Dialog", ribbon("View > Zoom")],
-    ["zoomIn", "Zoom In", shortcut("Ctrl+Mouse wheel up or View > Zoom In")],
-    ["zoomOnePage", "Zoom One Page", ribbon("View > One Page")],
-    ["zoomOut", "Zoom Out", shortcut("Ctrl+Mouse wheel down or View > Zoom Out")],
-    ["zoomPageWidth", "Zoom Page Width", ribbon("View > Page Width")],
-    ["zoomTwoPages", "Zoom Two Pages", ribbon("View > Multiple Pages")],
+    ["Heading 5 Style", function(){
+      if(isWord()){Word.run(function(c){c.document.getSelection().style="Heading 5";return c.sync();}).then(function(){showToast("Heading 5 applied.");}).catch(function(e){showToast("Error: "+e.message);});}
+      else{ribbon("Home","Styles > Heading 5");}
+    }],
+    ["Heading Rows Repeat", function(){ribbon("Table Layout","Repeat Header Rows");}],
+    ["Help", function(){shortcut("F1");}],
+    ["Hidden Text", function(){ribbon("Home","Font dialog > Effects > Hidden");}],
+    ["Highlight: Yellow", function(){setHighlight("#FFFF00");}],
+    ["Highlight: Bright Green", function(){setHighlight("#00FF00");}],
+    ["Highlight: Cyan", function(){setHighlight("#00FFFF");}],
+    ["Highlight: Pink", function(){setHighlight("#FF00FF");}],
+    ["Highlight: Red", function(){setHighlight("#FF0000");}],
+    ["Highlight: Blue", function(){setHighlight("#0000FF");}],
+    ["Highlight: Dark Blue", function(){setHighlight("#000080");}],
+    ["Highlight: Teal", function(){setHighlight("#008080");}],
+    ["Highlight: Green", function(){setHighlight("#008000");}],
+    ["Highlight: Dark Red", function(){setHighlight("#800000");}],
+    ["Highlight: Dark Yellow", function(){setHighlight("#808000");}],
+    ["Highlight: Gray 50%", function(){setHighlight("#808080");}],
+    ["Highlight: Gray 25%", function(){setHighlight("#C0C0C0");}],
+    ["Highlight: Remove", function(){setHighlight(null);}],
+    ["Horizontal Line", function(){wordInsertHtml('<hr style="border:1px solid #999;width:100%">',"Horizontal line inserted.");}],
+    ["Hyperlink: Insert", function(){shortcut("Ctrl+K");}],
+    ["Hyphenation: Automatic", function(){ribbon("Layout","Hyphenation > Automatic");}],
+    ["Hyphenation: Manual", function(){ribbon("Layout","Hyphenation > Manual");}],
+    ["Hyphenation: None", function(){ribbon("Layout","Hyphenation > None");}],
+    ["Icons", function(){ribbon("Insert","Icons");}],
+    ["Immersive Reader", function(){ribbon("View","Immersive Reader");}],
+    ["Increase Font Size", function(){
+      if(isWord()){Word.run(function(c){var s=c.document.getSelection();s.font.load("size");return c.sync().then(function(){s.font.size=s.font.size+1;return c.sync();});}).then(function(){showToast("Font size increased.");}).catch(function(e){showToast("Error: "+e.message);});}
+      else{shortcut("Ctrl+Shift+>");}
+    }],
+    ["Increase Indent", function(){setIndent("left",36);}],
+    ["Increase List Level", function(){shortcut("Tab in list");}],
+    ["Index: Insert", function(){ribbon("References","Insert Index");}],
+    ["Index: Mark Entry", function(){shortcut("Alt+Shift+X");}],
+    ["Index: Update", function(){ribbon("References","Update Index");}],
+    ["Insert Address Block (Mail Merge)", function(){ribbon("Mailings","Address Block");}],
+    ["Insert Caption", function(){ribbon("References","Insert Caption");}],
+    ["Insert Cells", function(){ribbon("Table Layout","Insert > Insert Cells");}],
+    ["Insert Citation", function(){ribbon("References","Insert Citation");}],
+    ["Insert Columns to the Left", function(){ribbon("Table Layout","Insert Left");}],
+    ["Insert Columns to the Right", function(){ribbon("Table Layout","Insert Right");}],
+    ["Insert Comment", function(){shortcut("Ctrl+Alt+M");}],
+    ["Insert Date", function(){ribbon("Insert","Date & Time");}],
+    ["Insert Endnote", function(){shortcut("Ctrl+Alt+D");}],
+    ["Insert Equation", function(){shortcut("Alt+=");}],
+    ["Insert Field", function(){ribbon("Insert","Quick Parts > Field");}],
+    ["Insert File (Text from File)", function(){ribbon("Insert","Object > Text from File");}],
+    ["Insert Footnote", function(){shortcut("Ctrl+Alt+F");}],
+    ["Insert Frame", function(){ribbon("Developer","Legacy Tools > Frame");}],
+    ["Insert Merge Field", function(){ribbon("Mailings","Insert Merge Field");}],
+    ["Insert Online Pictures", function(){ribbon("Insert","Online Pictures");}],
+    ["Insert Online Video", function(){ribbon("Insert","Online Video");}],
+    ["Insert Page Number", function(){ribbon("Insert","Page Number");}],
+    ["Insert Picture from File", function(){ribbon("Insert","Pictures > This Device");}],
+    ["Insert Rows Above", function(){ribbon("Table Layout","Insert Above");}],
+    ["Insert Rows Below", function(){ribbon("Table Layout","Insert Below");}],
+    ["Insert Signature Line", function(){ribbon("Insert","Signature Line");}],
+    ["Insert Symbol", function(){ribbon("Insert","Symbol > More Symbols");}],
+    ["Insert Table", function(){
+      if(isWord()){Word.run(function(c){c.document.getSelection().insertTable(3,3,"After",[["","",""],["","",""],["","",""]]);return c.sync();}).then(function(){showToast("Table inserted.");}).catch(function(e){showToast("Error: "+e.message);});}
+      else if(isExcel()){Excel.run(function(c){var sh=c.workbook.worksheets.getActiveWorksheet();var r=c.workbook.getSelectedRange();r.load("address");return c.sync().then(function(){sh.tables.add(r.address,true).name="QuickTable_"+Date.now();return c.sync();});}).then(function(){showToast("Table created.");}).catch(function(e){showToast("Error: "+e.message);});}
+      else{showToast("Not available for this app.");}
+    }],
+    ["Insert Table of Authorities", function(){ribbon("References","Insert Table of Authorities");}],
+    ["Insert Table of Contents", function(){ribbon("References","Table of Contents");}],
+    ["Insert Table of Figures", function(){ribbon("References","Insert Table of Figures");}],
+    ["Insert Text Box", function(){ribbon("Insert","Text Box");}],
+    ["Insert Time", function(){ribbon("Insert","Date & Time (with time format)");}],
+    ["Insert WordArt", function(){ribbon("Insert","WordArt");}],
+    ["Italic", function(){toggleFont("italic");}],
+    ["Justify", function(){setAlignment("Justified");}],
+    ["Keep Lines Together", function(){ribbon("Home","Paragraph dialog > Line and Page Breaks > Keep lines together");}],
+    ["Keep with Next", function(){ribbon("Home","Paragraph dialog > Line and Page Breaks > Keep with next");}],
+    ["Labels", function(){ribbon("Mailings","Labels");}],
+    ["Landscape Orientation", function(){ribbon("Layout","Orientation > Landscape");}],
+    ["Language: Set Proofing", function(){ribbon("Review","Language > Set Proofing Language");}],
+    ["Language: Translate Document", function(){ribbon("Review","Translate > Translate Document");}],
+    ["Language: Translate Selection", function(){ribbon("Review","Translate > Translate Selection");}],
+    ["Last Column (Table Style)", function(){ribbon("Table Design","Last Column");}],
+    ["Left Indent", function(){setIndent("left",36);}],
+    ["Left Tab Stop", function(){ribbon("Home","Paragraph dialog > Tabs");}],
+    ["Line and Page Breaks", function(){ribbon("Home","Paragraph dialog > Line and Page Breaks");}],
+    ["Line Break", function(){shortcut("Shift+Enter");}],
+    ["Line Numbers", function(){ribbon("Layout","Line Numbers");}],
+    ["Line Spacing: 1.0", function(){setLineSpacing(12);}],
+    ["Line Spacing: 1.15", function(){setLineSpacing(13.8);}],
+    ["Line Spacing: 1.5", function(){setLineSpacing(18);}],
+    ["Line Spacing: 2.0", function(){setLineSpacing(24);}],
+    ["Line Spacing: 2.5", function(){setLineSpacing(30);}],
+    ["Line Spacing: 3.0", function(){setLineSpacing(36);}],
+    ["Link to Previous (Header/Footer)", function(){ribbon("Header & Footer","Link to Previous");}],
+    ["Lock Tracking", function(){ribbon("Review","Track Changes > Lock Tracking");}],
+    ["Lowercase", function(){
+      if(isWord()){Word.run(function(c){var s=c.document.getSelection();s.load("text");return c.sync().then(function(){s.insertText(s.text.toLowerCase(),"Replace");return c.sync();});}).then(function(){showToast("Lowercase applied.");}).catch(function(e){showToast("Error: "+e.message);});}
+      else{showToast("Not available for this app.");}
+    }],
+    ["Macros: Record", function(){ribbon("View","Macros > Record Macro");}],
+    ["Macros: View", function(){shortcut("Alt+F8");}],
+    ["Mail Merge: Start", function(){ribbon("Mailings","Start Mail Merge");}],
+    ["Mail Merge: Select Recipients", function(){ribbon("Mailings","Select Recipients");}],
+    ["Mail Merge: Preview Results", function(){ribbon("Mailings","Preview Results");}],
+    ["Mail Merge: Finish & Merge", function(){ribbon("Mailings","Finish & Merge");}],
+    ["Manage Add-ins", function(){ribbon("Insert","My Add-ins > Manage My Add-ins");}],
+    ["Manage Sources", function(){ribbon("References","Manage Sources");}],
+    ["Manage Styles", function(){ribbon("Home","Styles launcher > Manage Styles");}],
+    ["Manual Hyphenation", function(){ribbon("Layout","Hyphenation > Manual");}],
+    ["Margins: Normal", function(){ribbon("Layout","Margins > Normal");}],
+    ["Margins: Narrow", function(){ribbon("Layout","Margins > Narrow");}],
+    ["Margins: Moderate", function(){ribbon("Layout","Margins > Moderate");}],
+    ["Margins: Wide", function(){ribbon("Layout","Margins > Wide");}],
+    ["Margins: Mirrored", function(){ribbon("Layout","Margins > Mirrored");}],
+    ["Mark Citation", function(){ribbon("References","Mark Citation");}],
+    ["Mark Index Entry", function(){shortcut("Alt+Shift+X");}],
+    ["Mark Table of Contents Entry", function(){ribbon("References","Add Text");}],
+    ["Merge Cells", function(){ribbon("Table Layout","Merge Cells");}],
+    ["Merge Formatting (Paste)", function(){shortcut("Ctrl+Shift+V (then choose)");}],
+    ["Modify Style", function(){ribbon("Home","Styles > right-click style > Modify");}],
+    ["Move Down (Outline)", function(){ribbon("Outlining","Move Down");}],
+    ["Move Up (Outline)", function(){ribbon("Outlining","Move Up");}],
+    ["Multilevel List", function(){ribbon("Home","Multilevel List");}],
+    ["Navigation Pane", function(){shortcut("Ctrl+F (opens Navigation)");}],
+    ["New Blank Document", function(){shortcut("Ctrl+N");}],
+    ["New Comment", function(){shortcut("Ctrl+Alt+M");}],
+    ["New Folder", function(){ribbon("File","Save As > New Folder");}],
+    ["New from Template", function(){ribbon("File","New");}],
+    ["New Window", function(){ribbon("View","New Window");}],
+    ["Next Change", function(){ribbon("Review","Next Change");}],
+    ["Next Comment", function(){ribbon("Review","Next Comment");}],
+    ["Next Footnote", function(){ribbon("References","Next Footnote");}],
+    ["Next Page Section Break", function(){wordInsertBreak("SectionNext");}],
+    ["No Spacing Style", function(){
+      if(isWord()){Word.run(function(c){c.document.getSelection().style="No Spacing";return c.sync();}).then(function(){showToast("No Spacing applied.");}).catch(function(e){showToast("Error: "+e.message);});}
+      else{ribbon("Home","Styles > No Spacing");}
+    }],
+    ["Normal Style", function(){
+      if(isWord()){Word.run(function(c){c.document.getSelection().style="Normal";return c.sync();}).then(function(){showToast("Normal style applied.");}).catch(function(e){showToast("Error: "+e.message);});}
+      else{shortcut("Ctrl+Shift+N");}
+    }],
+    ["Numbering", function(){ribbon("Home","Numbering");}],
+    ["Object: Insert", function(){ribbon("Insert","Object");}],
+    ["Odd Page Section Break", function(){wordInsertBreak("OddPage");}],
+    ["Open", function(){shortcut("Ctrl+O");}],
+    ["Open Hyperlink", function(){shortcut("Ctrl+Click on hyperlink");}],
+    ["Open in Browser", function(){ribbon("File","Info > Open in Browser");}],
+    ["Orientation: Portrait", function(){ribbon("Layout","Orientation > Portrait");}],
+    ["Orientation: Landscape", function(){ribbon("Layout","Orientation > Landscape");}],
+    ["Outline View", function(){ribbon("View","Outline");}],
+    ["Page Background: Color", function(){ribbon("Design","Page Color");}],
+    ["Page Background: Watermark", function(){ribbon("Design","Watermark");}],
+    ["Page Background: Page Borders", function(){ribbon("Design","Page Borders");}],
+    ["Page Break", function(){wordInsertBreak("Page");}],
+    ["Page Break Before", function(){ribbon("Home","Paragraph dialog > Line and Page Breaks > Page break before");}],
+    ["Page Color", function(){ribbon("Design","Page Color");}],
+    ["Page Down", function(){shortcut("Page Down key");}],
+    ["Page Layout View", function(){ribbon("View","Print Layout");}],
+    ["Page Number: Top of Page", function(){ribbon("Insert","Page Number > Top of Page");}],
+    ["Page Number: Bottom of Page", function(){ribbon("Insert","Page Number > Bottom of Page");}],
+    ["Page Number: Page Margins", function(){ribbon("Insert","Page Number > Page Margins");}],
+    ["Page Number: Current Position", function(){ribbon("Insert","Page Number > Current Position");}],
+    ["Page Number: Format", function(){ribbon("Insert","Page Number > Format Page Numbers");}],
+    ["Page Number: Remove", function(){ribbon("Insert","Page Number > Remove Page Numbers");}],
+    ["Page Setup Dialog", function(){ribbon("Layout","Page Setup launcher (bottom-right arrow)");}],
+    ["Page Up", function(){shortcut("Page Up key");}],
+    ["Paragraph Dialog", function(){ribbon("Home","Paragraph launcher (bottom-right arrow)");}],
+    ["Paragraph Marks (Show/Hide)", function(){shortcut("Ctrl+Shift+8");}],
+    ["Paragraph Shading", function(){ribbon("Home","Shading (paint bucket)");}],
+    ["Paste", function(){shortcut("Ctrl+V");}],
+    ["Paste as Hyperlink", function(){ribbon("Home","Paste > Paste Special > Paste as Hyperlink");}],
+    ["Paste as Picture", function(){ribbon("Home","Paste > Paste Special > Picture");}],
+    ["Paste: Keep Source Formatting", function(){shortcut("Ctrl+V then Ctrl > K");}],
+    ["Paste: Keep Text Only", function(){shortcut("Ctrl+V then Ctrl > T");}],
+    ["Paste: Merge Formatting", function(){shortcut("Ctrl+V then Ctrl > M");}],
+    ["Paste Special", function(){shortcut("Ctrl+Alt+V");}],
+    ["Picture: Insert", function(){ribbon("Insert","Pictures");}],
+    ["Picture: Border", function(){ribbon("Picture Format","Picture Border");}],
+    ["Picture: Effects", function(){ribbon("Picture Format","Picture Effects");}],
+    ["Picture: Layout", function(){ribbon("Picture Format","Picture Layout");}],
+    ["Picture: Compress", function(){ribbon("Picture Format","Compress Pictures");}],
+    ["Picture: Reset", function(){ribbon("Picture Format","Reset Picture");}],
+    ["Picture: Crop", function(){ribbon("Picture Format","Crop");}],
+    ["Portrait Orientation", function(){ribbon("Layout","Orientation > Portrait");}],
+    ["Position Object", function(){ribbon("Shape Format","Position");}],
+    ["Present Online", function(){ribbon("File","Share > Present Online");}],
+    ["Previous Change", function(){ribbon("Review","Previous Change");}],
+    ["Previous Comment", function(){ribbon("Review","Previous Comment");}],
+    ["Print", function(){shortcut("Ctrl+P");}],
+    ["Print Layout View", function(){ribbon("View","Print Layout");}],
+    ["Print Preview", function(){shortcut("Ctrl+F2");}],
+    ["Promote (Outline)", function(){ribbon("Outlining","Promote");}],
+    ["Protect Document", function(){ribbon("File","Info > Protect Document");}],
+    ["Quick Parts", function(){ribbon("Insert","Quick Parts");}],
+    ["Quick Print", function(){shortcut("Ctrl+P then Enter");}],
+    ["Quick Styles", function(){ribbon("Home","Styles gallery");}],
+    ["Quick Tables", function(){ribbon("Insert","Table > Quick Tables");}],
+    ["Read Mode", function(){ribbon("View","Read Mode");}],
+    ["Redo", function(){shortcut("Ctrl+Y");}],
+    ["References: Bibliography", function(){ribbon("References","Bibliography");}],
+    ["References: Manage Sources", function(){ribbon("References","Manage Sources");}],
+    ["References: Style (APA, MLA, etc.)", function(){ribbon("References","Style dropdown");}],
+    ["Reject All Changes in Document", function(){ribbon("Review","Reject > Reject All Changes");}],
+    ["Reject and Move to Next", function(){ribbon("Review","Reject");}],
+    ["Remove All Formatting", function(){
+      if(isWord()){Word.run(function(c){c.document.getSelection().font.set({bold:false,italic:false,underline:"None",strikethrough:false,superscript:false,subscript:false,color:"#000000",highlightColor:null});return c.sync();}).then(function(){showToast("Formatting removed.");}).catch(function(e){showToast("Error: "+e.message);});}
+      else{shortcut("Ctrl+Space");}
+    }],
+    ["Remove Hyperlink", function(){ribbon("Right-click hyperlink > Remove Hyperlink");}],
+    ["Remove Page Break", function(){showToast("Show formatting marks (Ctrl+Shift+8), select break, press Delete.");}],
+    ["Remove Space After Paragraph", function(){setSpaceAfter(0);}],
+    ["Remove Space Before Paragraph", function(){setSpaceBefore(0);}],
+    ["Remove Table of Contents", function(){ribbon("References","Table of Contents > Remove Table of Contents");}],
+    ["Remove Watermark", function(){ribbon("Design","Watermark > Remove Watermark");}],
+    ["Repeat", function(){shortcut("Ctrl+Y or F4");}],
+    ["Repeat Header Rows", function(){ribbon("Table Layout","Repeat Header Rows");}],
+    ["Replace", function(){shortcut("Ctrl+H");}],
+    ["Research", function(){ribbon("Review","Research / Smart Lookup");}],
+    ["Reset Character Formatting", function(){shortcut("Ctrl+Space");}],
+    ["Reset Paragraph Formatting", function(){shortcut("Ctrl+Q");}],
+    ["Reset Picture", function(){ribbon("Picture Format","Reset Picture");}],
+    ["Restart Numbering", function(){ribbon("Home","right-click number > Restart at 1");}],
+    ["Restrict Editing", function(){ribbon("Review","Restrict Editing");}],
+    ["Reviewing Pane: Horizontal", function(){ribbon("Review","Reviewing Pane > Horizontal");}],
+    ["Reviewing Pane: Vertical", function(){ribbon("Review","Reviewing Pane > Vertical");}],
+    ["Right Indent", function(){setIndent("right",36);}],
+    ["Right Tab Stop", function(){ribbon("Home","Paragraph dialog > Tabs");}],
+    ["Rotate Left 90", function(){ribbon("Shape Format","Rotate > Rotate Left 90");}],
+    ["Rotate Right 90", function(){ribbon("Shape Format","Rotate > Rotate Right 90");}],
+    ["Ruler (Show/Hide)", function(){ribbon("View","Ruler");}],
+    ["Save", function(){
+      Office.context.document.save(Office.AsyncResultStatus||{},function(r){
+        if(r.status===Office.AsyncResultStatus.Failed){showToast("Save failed: "+r.error.message);}else{showToast("Saved!");}
+      });
+    }],
+    ["Save All", function(){shortcut("Not available via API. Save each document individually.");}],
+    ["Save As", function(){shortcut("F12 or Ctrl+Shift+S");}],
+    ["Save As PDF", function(){ribbon("File","Export > Create PDF/XPS");}],
+    ["Save As Template", function(){ribbon("File","Save As > Word Template (*.dotx)");}],
+    ["Screenshot", function(){ribbon("Insert","Screenshot");}],
+    ["Screen Clipping", function(){ribbon("Insert","Screenshot > Screen Clipping");}],
+    ["Search Document", function(){shortcut("Ctrl+F");}],
+    ["Section Break: Continuous", function(){wordInsertBreak("SectionContinuous");}],
+    ["Section Break: Even Page", function(){wordInsertBreak("EvenPage");}],
+    ["Section Break: Next Page", function(){wordInsertBreak("SectionNext");}],
+    ["Section Break: Odd Page", function(){wordInsertBreak("OddPage");}],
+    ["Select All", function(){
+      if(isWord()){Word.run(function(c){c.document.body.getRange().select();return c.sync();}).then(function(){showToast("All selected.");}).catch(function(e){showToast("Error: "+e.message);});}
+      else{shortcut("Ctrl+A");}
+    }],
+    ["Select Cell", function(){ribbon("Table Layout","Select > Select Cell");}],
+    ["Select Column", function(){ribbon("Table Layout","Select > Select Column");}],
+    ["Select Objects", function(){ribbon("Home","Select > Select Objects");}],
+    ["Select Row", function(){ribbon("Table Layout","Select > Select Row");}],
+    ["Select Table", function(){ribbon("Table Layout","Select > Select Table");}],
+    ["Selection Pane", function(){ribbon("Shape Format","Selection Pane");}],
+    ["Send as Attachment", function(){ribbon("File","Share > Email");}],
+    ["Send as PDF", function(){ribbon("File","Share > Email > Send as PDF");}],
+    ["Send Backward", function(){ribbon("Shape Format","Send Backward");}],
+    ["Send Behind Text", function(){ribbon("Shape Format","Send Backward > Send Behind Text");}],
+    ["Send to Back", function(){ribbon("Shape Format","Send to Back");}],
+    ["Shading", function(){ribbon("Home","Shading (paint bucket icon)");}],
+    ["Shape Effects", function(){ribbon("Shape Format","Shape Effects");}],
+    ["Shape Fill", function(){ribbon("Shape Format","Shape Fill");}],
+    ["Shape Outline", function(){ribbon("Shape Format","Shape Outline");}],
+    ["Shapes: Insert", function(){ribbon("Insert","Shapes");}],
+    ["Share", function(){ribbon("File","Share");}],
+    ["Show All Formatting Marks", function(){shortcut("Ctrl+Shift+8 or Ctrl+*");}],
+    ["Show Comments", function(){ribbon("Review","Show Comments");}],
+    ["Show Markup", function(){ribbon("Review","Show Markup");}],
+    ["Show/Hide Paragraph Marks", function(){shortcut("Ctrl+Shift+8");}],
+    ["Shrink Font", function(){shortcut("Ctrl+Shift+<");}],
+    ["Shrink One Page", function(){ribbon("Print Preview","Shrink One Page");}],
+    ["Simple Markup", function(){ribbon("Review","Display for Review > Simple Markup");}],
+    ["Size: Letter (8.5x11)", function(){ribbon("Layout","Size > Letter");}],
+    ["Size: Legal (8.5x14)", function(){ribbon("Layout","Size > Legal");}],
+    ["Size: A4", function(){ribbon("Layout","Size > A4");}],
+    ["Size: A5", function(){ribbon("Layout","Size > A5");}],
+    ["Size: B5", function(){ribbon("Layout","Size > B5");}],
+    ["Size: Executive", function(){ribbon("Layout","Size > Executive");}],
+    ["Small Caps", function(){shortcut("Ctrl+Shift+K");}],
+    ["SmartArt", function(){ribbon("Insert","SmartArt");}],
+    ["Snap to Grid", function(){ribbon("Shape Format","Align > Grid Settings > Snap to Grid");}],
+    ["Sort", function(){ribbon("Home","Sort (A-Z icon)");}],
+    ["Sort Ascending", function(){ribbon("Home","Sort > Ascending");}],
+    ["Sort Descending", function(){ribbon("Home","Sort > Descending");}],
+    ["Space After: 0 pt", function(){setSpaceAfter(0);}],
+    ["Space After: 6 pt", function(){setSpaceAfter(6);}],
+    ["Space After: 8 pt", function(){setSpaceAfter(8);}],
+    ["Space After: 10 pt", function(){setSpaceAfter(10);}],
+    ["Space After: 12 pt", function(){setSpaceAfter(12);}],
+    ["Space After: 24 pt", function(){setSpaceAfter(24);}],
+    ["Space Before: 0 pt", function(){setSpaceBefore(0);}],
+    ["Space Before: 6 pt", function(){setSpaceBefore(6);}],
+    ["Space Before: 8 pt", function(){setSpaceBefore(8);}],
+    ["Space Before: 10 pt", function(){setSpaceBefore(10);}],
+    ["Space Before: 12 pt", function(){setSpaceBefore(12);}],
+    ["Space Before: 24 pt", function(){setSpaceBefore(24);}],
+    ["Spelling and Grammar", function(){shortcut("F7");}],
+    ["Split Cells", function(){ribbon("Table Layout","Split Cells");}],
+    ["Split Table", function(){ribbon("Table Layout","Split Table");}],
+    ["Split Window", function(){ribbon("View","Split");}],
+    ["Start Mail Merge", function(){ribbon("Mailings","Start Mail Merge");}],
+    ["Start Tracking Changes", function(){shortcut("Ctrl+Shift+E");}],
+    ["Strikethrough", function(){toggleFont("strikethrough");}],
+    ["Style: Heading 1", function(){
+      if(isWord()){Word.run(function(c){c.document.getSelection().style="Heading 1";return c.sync();}).then(function(){showToast("Heading 1 applied.");}).catch(function(e){showToast("Error: "+e.message);});}
+      else{shortcut("Ctrl+Alt+1");}
+    }],
+    ["Style: Heading 2", function(){
+      if(isWord()){Word.run(function(c){c.document.getSelection().style="Heading 2";return c.sync();}).then(function(){showToast("Heading 2 applied.");}).catch(function(e){showToast("Error: "+e.message);});}
+      else{shortcut("Ctrl+Alt+2");}
+    }],
+    ["Style: Heading 3", function(){
+      if(isWord()){Word.run(function(c){c.document.getSelection().style="Heading 3";return c.sync();}).then(function(){showToast("Heading 3 applied.");}).catch(function(e){showToast("Error: "+e.message);});}
+      else{shortcut("Ctrl+Alt+3");}
+    }],
+    ["Style: Normal", function(){
+      if(isWord()){Word.run(function(c){c.document.getSelection().style="Normal";return c.sync();}).then(function(){showToast("Normal style applied.");}).catch(function(e){showToast("Error: "+e.message);});}
+      else{shortcut("Ctrl+Shift+N");}
+    }],
+    ["Style: No Spacing", function(){
+      if(isWord()){Word.run(function(c){c.document.getSelection().style="No Spacing";return c.sync();}).then(function(){showToast("No Spacing applied.");}).catch(function(e){showToast("Error: "+e.message);});}
+      else{ribbon("Home","Styles > No Spacing");}
+    }],
+    ["Style: Title", function(){
+      if(isWord()){Word.run(function(c){c.document.getSelection().style="Title";return c.sync();}).then(function(){showToast("Title style applied.");}).catch(function(e){showToast("Error: "+e.message);});}
+      else{ribbon("Home","Styles > Title");}
+    }],
+    ["Style: Subtitle", function(){
+      if(isWord()){Word.run(function(c){c.document.getSelection().style="Subtitle";return c.sync();}).then(function(){showToast("Subtitle style applied.");}).catch(function(e){showToast("Error: "+e.message);});}
+      else{ribbon("Home","Styles > Subtitle");}
+    }],
+    ["Style: Emphasis", function(){
+      if(isWord()){Word.run(function(c){c.document.getSelection().style="Emphasis";return c.sync();}).then(function(){showToast("Emphasis applied.");}).catch(function(e){showToast("Error: "+e.message);});}
+      else{ribbon("Home","Styles > Emphasis");}
+    }],
+    ["Style: Strong", function(){
+      if(isWord()){Word.run(function(c){c.document.getSelection().style="Strong";return c.sync();}).then(function(){showToast("Strong applied.");}).catch(function(e){showToast("Error: "+e.message);});}
+      else{ribbon("Home","Styles > Strong");}
+    }],
+    ["Style: Quote", function(){
+      if(isWord()){Word.run(function(c){c.document.getSelection().style="Quote";return c.sync();}).then(function(){showToast("Quote style applied.");}).catch(function(e){showToast("Error: "+e.message);});}
+      else{ribbon("Home","Styles > Quote");}
+    }],
+    ["Style: Intense Quote", function(){
+      if(isWord()){Word.run(function(c){c.document.getSelection().style="Intense Quote";return c.sync();}).then(function(){showToast("Intense Quote applied.");}).catch(function(e){showToast("Error: "+e.message);});}
+      else{ribbon("Home","Styles > Intense Quote");}
+    }],
+    ["Style: List Paragraph", function(){
+      if(isWord()){Word.run(function(c){c.document.getSelection().style="List Paragraph";return c.sync();}).then(function(){showToast("List Paragraph applied.");}).catch(function(e){showToast("Error: "+e.message);});}
+      else{ribbon("Home","Styles > List Paragraph");}
+    }],
+    ["Style: Subtle Emphasis", function(){
+      if(isWord()){Word.run(function(c){c.document.getSelection().style="Subtle Emphasis";return c.sync();}).then(function(){showToast("Subtle Emphasis applied.");}).catch(function(e){showToast("Error: "+e.message);});}
+      else{ribbon("Home","Styles > Subtle Emphasis");}
+    }],
+    ["Style: Intense Emphasis", function(){
+      if(isWord()){Word.run(function(c){c.document.getSelection().style="Intense Emphasis";return c.sync();}).then(function(){showToast("Intense Emphasis applied.");}).catch(function(e){showToast("Error: "+e.message);});}
+      else{ribbon("Home","Styles > Intense Emphasis");}
+    }],
+    ["Style: Subtle Reference", function(){
+      if(isWord()){Word.run(function(c){c.document.getSelection().style="Subtle Reference";return c.sync();}).then(function(){showToast("Subtle Reference applied.");}).catch(function(e){showToast("Error: "+e.message);});}
+      else{ribbon("Home","Styles > Subtle Reference");}
+    }],
+    ["Style: Intense Reference", function(){
+      if(isWord()){Word.run(function(c){c.document.getSelection().style="Intense Reference";return c.sync();}).then(function(){showToast("Intense Reference applied.");}).catch(function(e){showToast("Error: "+e.message);});}
+      else{ribbon("Home","Styles > Intense Reference");}
+    }],
+    ["Style: Book Title", function(){
+      if(isWord()){Word.run(function(c){c.document.getSelection().style="Book Title";return c.sync();}).then(function(){showToast("Book Title applied.");}).catch(function(e){showToast("Error: "+e.message);});}
+      else{ribbon("Home","Styles > Book Title");}
+    }],
+    ["Subscript", function(){
+      if(isWord()){Word.run(function(c){var s=c.document.getSelection();s.font.load("subscript");return c.sync().then(function(){s.font.subscript=!s.font.subscript;return c.sync();});}).then(function(){showToast("Subscript toggled.");}).catch(function(e){showToast("Error: "+e.message);});}
+      else{shortcut("Ctrl+=");}
+    }],
+    ["Superscript", function(){
+      if(isWord()){Word.run(function(c){var s=c.document.getSelection();s.font.load("superscript");return c.sync().then(function(){s.font.superscript=!s.font.superscript;return c.sync();});}).then(function(){showToast("Superscript toggled.");}).catch(function(e){showToast("Error: "+e.message);});}
+      else{shortcut("Ctrl+Shift++");}
+    }],
+    ["Switch Windows", function(){ribbon("View","Switch Windows");}],
+    ["Symbol: Insert", function(){ribbon("Insert","Symbol > More Symbols");}],
+    ["Synonyms / Thesaurus", function(){shortcut("Shift+F7");}],
+    ["Tab Character", function(){shortcut("Tab key");}],
+    ["Table Design: Banded Columns", function(){ribbon("Table Design","Banded Columns");}],
+    ["Table Design: Banded Rows", function(){ribbon("Table Design","Banded Rows");}],
+    ["Table Design: First Column", function(){ribbon("Table Design","First Column");}],
+    ["Table Design: Header Row", function(){ribbon("Table Design","Header Row");}],
+    ["Table Design: Last Column", function(){ribbon("Table Design","Last Column");}],
+    ["Table Design: Total Row", function(){ribbon("Table Design","Total Row");}],
+    ["Table Gridlines (Show/Hide)", function(){ribbon("Table Layout","View Gridlines");}],
+    ["Table of Authorities: Insert", function(){ribbon("References","Insert Table of Authorities");}],
+    ["Table of Authorities: Mark Citation", function(){ribbon("References","Mark Citation");}],
+    ["Table of Contents: Insert", function(){ribbon("References","Table of Contents");}],
+    ["Table of Contents: Update", function(){ribbon("References","Update Table");}],
+    ["Table of Contents: Remove", function(){ribbon("References","Table of Contents > Remove");}],
+    ["Table of Figures: Insert", function(){ribbon("References","Insert Table of Figures");}],
+    ["Table of Figures: Update", function(){ribbon("References","Update Table");}],
+    ["Table Properties", function(){ribbon("Table Layout","Properties");}],
+    ["Table Select", function(){ribbon("Table Layout","Select");}],
+    ["Tabs Dialog", function(){ribbon("Home","Paragraph dialog > Tabs");}],
+    ["Templates", function(){ribbon("File","New > Personal Templates");}],
+    ["Text Box: Draw", function(){ribbon("Insert","Text Box > Draw Text Box");}],
+    ["Text Box: Simple", function(){ribbon("Insert","Text Box > Simple Text Box");}],
+    ["Text Direction", function(){ribbon("Table Layout","Text Direction");}],
+    ["Text Effects", function(){ribbon("Home","Text Effects and Typography");}],
+    ["Text Highlight Color", function(){ribbon("Home","Text Highlight Color");}],
+    ["Text Wrapping: In Line with Text", function(){ribbon("Shape Format/Picture Format","Wrap Text > In Line with Text");}],
+    ["Text Wrapping: Square", function(){ribbon("Shape Format/Picture Format","Wrap Text > Square");}],
+    ["Text Wrapping: Tight", function(){ribbon("Shape Format/Picture Format","Wrap Text > Tight");}],
+    ["Text Wrapping: Through", function(){ribbon("Shape Format/Picture Format","Wrap Text > Through");}],
+    ["Text Wrapping: Top and Bottom", function(){ribbon("Shape Format/Picture Format","Wrap Text > Top and Bottom");}],
+    ["Text Wrapping: Behind Text", function(){ribbon("Shape Format/Picture Format","Wrap Text > Behind Text");}],
+    ["Text Wrapping: In Front of Text", function(){ribbon("Shape Format/Picture Format","Wrap Text > In Front of Text");}],
+    ["Theme Colors", function(){ribbon("Design","Colors");}],
+    ["Theme Effects", function(){ribbon("Design","Effects");}],
+    ["Theme Fonts", function(){ribbon("Design","Fonts");}],
+    ["Themes", function(){ribbon("Design","Themes");}],
+    ["Thesaurus", function(){shortcut("Shift+F7");}],
+    ["Title Style", function(){
+      if(isWord()){Word.run(function(c){c.document.getSelection().style="Title";return c.sync();}).then(function(){showToast("Title style applied.");}).catch(function(e){showToast("Error: "+e.message);});}
+      else{ribbon("Home","Styles > Title");}
+    }],
+    ["Toggle Field Codes", function(){shortcut("Alt+F9");}],
+    ["Toggle Full Screen", function(){shortcut("Alt+V, U (or View > Full Screen)");}],
+    ["Track Changes", function(){shortcut("Ctrl+Shift+E");}],
+    ["Track Changes Options", function(){ribbon("Review","Track Changes > Change Tracking Options");}],
+    ["Translate Document", function(){ribbon("Review","Translate > Translate Document");}],
+    ["Translate Selection", function(){ribbon("Review","Translate > Translate Selection");}],
+    ["Underline", function(){
+      if(isWord()){Word.run(function(c){var s=c.document.getSelection();s.font.load("underline");return c.sync().then(function(){s.font.underline=s.font.underline==="None"?"Single":"None";return c.sync();});}).then(function(){showToast("Underline toggled.");}).catch(function(e){showToast("Error: "+e.message);});}
+      else{toggleFont("underline");}
+    }],
+    ["Underline: Double", function(){
+      if(isWord()){Word.run(function(c){c.document.getSelection().font.underline="Double";return c.sync();}).then(function(){showToast("Double underline applied.");}).catch(function(e){showToast("Error: "+e.message);});}
+      else{shortcut("Ctrl+Shift+D");}
+    }],
+    ["Underline: Dotted", function(){
+      if(isWord()){Word.run(function(c){c.document.getSelection().font.underline="Dotted";return c.sync();}).then(function(){showToast("Dotted underline applied.");}).catch(function(e){showToast("Error: "+e.message);});}
+      else{ribbon("Home","Font dialog > Underline style");}
+    }],
+    ["Underline: Dashed", function(){
+      if(isWord()){Word.run(function(c){c.document.getSelection().font.underline="DashLine";return c.sync();}).then(function(){showToast("Dashed underline applied.");}).catch(function(e){showToast("Error: "+e.message);});}
+      else{ribbon("Home","Font dialog > Underline style");}
+    }],
+    ["Underline: Wavy", function(){
+      if(isWord()){Word.run(function(c){c.document.getSelection().font.underline="Wave";return c.sync();}).then(function(){showToast("Wavy underline applied.");}).catch(function(e){showToast("Error: "+e.message);});}
+      else{ribbon("Home","Font dialog > Underline style");}
+    }],
+    ["Underline: Thick", function(){
+      if(isWord()){Word.run(function(c){c.document.getSelection().font.underline="Thick";return c.sync();}).then(function(){showToast("Thick underline applied.");}).catch(function(e){showToast("Error: "+e.message);});}
+      else{ribbon("Home","Font dialog > Underline style");}
+    }],
+    ["Underline: Word Only", function(){
+      if(isWord()){Word.run(function(c){c.document.getSelection().font.underline="Word";return c.sync();}).then(function(){showToast("Word-only underline applied.");}).catch(function(e){showToast("Error: "+e.message);});}
+      else{shortcut("Ctrl+Shift+W");}
+    }],
+    ["Underline: None", function(){
+      if(isWord()){Word.run(function(c){c.document.getSelection().font.underline="None";return c.sync();}).then(function(){showToast("Underline removed.");}).catch(function(e){showToast("Error: "+e.message);});}
+      else{shortcut("Ctrl+U to toggle");}
+    }],
+    ["Undo", function(){shortcut("Ctrl+Z");}],
+    ["Ungroup Objects", function(){ribbon("Shape Format","Group > Ungroup");}],
+    ["Update All Fields", function(){shortcut("Ctrl+A then F9");}],
+    ["Update Bibliography", function(){ribbon("References","Update Citations and Bibliography");}],
+    ["Update Field", function(){shortcut("F9 (select field first)");}],
+    ["Update Index", function(){ribbon("References","Update Index");}],
+    ["Update Style to Match Selection", function(){ribbon("Home","right-click style > Update to Match Selection");}],
+    ["Update Table of Contents", function(){ribbon("References","Update Table");}],
+    ["Update Table of Figures", function(){ribbon("References","Update Table");}],
+    ["UPPERCASE", function(){
+      if(isWord()){Word.run(function(c){var s=c.document.getSelection();s.load("text");return c.sync().then(function(){s.insertText(s.text.toUpperCase(),"Replace");return c.sync();});}).then(function(){showToast("UPPERCASE applied.");}).catch(function(e){showToast("Error: "+e.message);});}
+      else{shortcut("Ctrl+Shift+A (in Word)");}
+    }],
+    ["View Gridlines (Table)", function(){ribbon("Table Layout","View Gridlines");}],
+    ["View Footnotes", function(){ribbon("References","Show Notes");}],
+    ["View Macros", function(){shortcut("Alt+F8");}],
+    ["View Ruler", function(){ribbon("View","Ruler");}],
+    ["View Side by Side", function(){ribbon("View","View Side by Side");}],
+    ["Visual Basic Editor", function(){shortcut("Alt+F11");}],
+    ["Watermark: Custom", function(){ribbon("Design","Watermark > Custom Watermark");}],
+    ["Watermark: Confidential", function(){ribbon("Design","Watermark > Confidential");}],
+    ["Watermark: Do Not Copy", function(){ribbon("Design","Watermark > Do Not Copy");}],
+    ["Watermark: Draft", function(){ribbon("Design","Watermark > Draft");}],
+    ["Watermark: Remove", function(){ribbon("Design","Watermark > Remove Watermark");}],
+    ["Watermark: Urgent", function(){ribbon("Design","Watermark > Urgent");}],
+    ["Web Layout View", function(){ribbon("View","Web Layout");}],
+    ["Whole Page Zoom", function(){ribbon("View","One Page (Zoom group)");}],
+    ["Widow/Orphan Control", function(){ribbon("Home","Paragraph dialog > Line and Page Breaks > Widow/Orphan control");}],
+    ["Word Count", function(){ribbon("Review","Word Count");}],
+    ["WordArt: Insert", function(){ribbon("Insert","WordArt");}],
+    ["Wrap Text", function(){ribbon("Shape Format / Picture Format","Wrap Text");}],
+    ["XML Mapping Pane", function(){ribbon("Developer","XML Mapping Pane");}],
+    ["XML Schema", function(){ribbon("Developer","XML Schema");}],
+    ["Zoom: 50%", function(){ribbon("View","Zoom > 50%");}],
+    ["Zoom: 75%", function(){ribbon("View","Zoom > 75%");}],
+    ["Zoom: 100%", function(){ribbon("View","Zoom > 100%");}],
+    ["Zoom: 150%", function(){ribbon("View","Zoom > 150%");}],
+    ["Zoom: 200%", function(){ribbon("View","Zoom > 200%");}],
+    ["Zoom: One Page", function(){ribbon("View","Zoom > One Page");}],
+    ["Zoom: Two Pages", function(){ribbon("View","Zoom > Two Pages");}],
+    ["Zoom: Page Width", function(){ribbon("View","Zoom > Page Width");}],
+    ["Zoom Dialog", function(){ribbon("View","Zoom launcher");}],
+    ["Zoom In", function(){shortcut("Ctrl+Mouse Scroll Up or Ctrl++");}],
+    ["Zoom Out", function(){shortcut("Ctrl+Mouse Scroll Down or Ctrl+-");}],
   ];
 
-  // ── Populate the dropdown ──────────────────────────────────────────
-  function populateDropdown() {
-    var sel = document.getElementById("command-list");
-    sel.innerHTML = "";
-    var placeholder = document.createElement("option");
-    placeholder.value = "";
-    placeholder.disabled = true;
-    placeholder.selected = true;
-    placeholder.textContent = "Choose a command (" + ALL_COMMANDS.length + " available)...";
-    sel.appendChild(placeholder);
-
-    ALL_COMMANDS.forEach(function (entry) {
-      var opt = document.createElement("option");
-      opt.value = entry[0];
-      opt.textContent = entry[1];
-      sel.appendChild(opt);
-    });
-  }
-
-  // ── Build lookup map ───────────────────────────────────────────────
-  var handlerMap = {};
-  ALL_COMMANDS.forEach(function (entry) {
-    handlerMap[entry[0]] = entry[2];
-  });
-
-  // ── Wire up Run button ─────────────────────────────────────────────
+  // ── Populate dropdown & wire events ───────────────────────────────
   function setup() {
-    populateDropdown();
-    var sel = document.getElementById("command-list");
+    var select = document.getElementById("command-list");
     var btn = document.getElementById("run-btn");
 
-    btn.addEventListener("click", function () {
-      var cmd = sel.value;
-      if (!cmd) { showToast("Pick a command first."); return; }
-      var fn = handlerMap[cmd];
-      if (fn) fn();
-      else showToast("Unknown command: " + cmd);
+    // Build options
+    select.innerHTML = "";
+    ALL_COMMANDS.forEach(function (entry, idx) {
+      var opt = document.createElement("option");
+      opt.value = idx;
+      opt.textContent = entry[0];
+      select.appendChild(opt);
     });
 
-    // Also run on double-click of an option
-    sel.addEventListener("dblclick", function () {
-      var cmd = sel.value;
-      if (cmd && handlerMap[cmd]) handlerMap[cmd]();
+    // Run on button click
+    btn.addEventListener("click", function () {
+      var idx = select.value;
+      if (idx === "" || idx === undefined) { showToast("Pick a command first."); return; }
+      ALL_COMMANDS[parseInt(idx, 10)][1]();
+    });
+
+    // Also run on double-click
+    select.addEventListener("dblclick", function () {
+      var idx = select.value;
+      if (idx === "" || idx === undefined) return;
+      ALL_COMMANDS[parseInt(idx, 10)][1]();
     });
   }
 
-  // ── Initialize ─────────────────────────────────────────────────────
-  Office.onReady(function () {
-    setup();
-  });
+  Office.onReady(function () { setup(); });
 })();
