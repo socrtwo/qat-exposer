@@ -1,139 +1,164 @@
-# Office Quick Access Toolbar Add-in
+# SuperQAT — Office Quick Access Toolbar Add-in
 
-An Office Web Add-in for **Word**, **Excel**, and **PowerPoint** that puts common Quick Access Toolbar (QAT) commands into organized ribbon dropdown menus — plus a side panel with every command as a button.
+An Office Web Add-in for **Word**, **Excel**, and **PowerPoint** that puts **all 649 Quick Access Toolbar commands** into a single dropdown. Pick any command, click Run, and it executes on your current content.
 
 ## What it does
 
-Instead of customizing the QAT manually in each app, this add-in adds a **"Quick Access"** ribbon tab with dropdown menus for:
-
-| Menu | Commands |
-|------|----------|
-| **File** | Save, Print |
-| **Edit** | Undo*, Redo*, Select All |
-| **Text Format** | Bold, Italic, Underline, Strikethrough, Superscript, Subscript |
-| **Font Size** | 8, 10, 11, 12, 14, 16, 18, 20, 24, 28, 36, 48, 72 pt |
-| **Font Color** | Black, Red, Blue, Green, Orange, Purple |
-| **Alignment** | Left, Center, Right, Justify |
-| **Highlight** | Yellow highlight, Remove highlight |
-| **Insert** | Table (3×3), Page Break, Horizontal Line |
-| **Panel** | Opens the full task-pane UI with all commands |
-
-*\* Undo/Redo have no Office.js API — the add-in shows a keyboard shortcut reminder instead.*
+Opens a task pane with one scrollable dropdown containing every command you'd find in File > Options > Quick Access Toolbar > All Commands. Commands that Office.js can execute directly (bold, italic, font sizes, colors, styles, alignment, highlights, underline variants, insert table, breaks, etc.) run immediately. Commands requiring the native ribbon or keyboard shortcuts show a toast with guidance.
 
 ## Platform support
 
-| Platform | Ribbon dropdowns | Task pane | Notes |
-|----------|:---:|:---:|-------|
-| **Windows desktop** | Yes | Yes | Full support |
-| **Mac desktop** | Yes | Yes | Full support |
-| **Office on the Web** | Yes | Yes | Full support |
-| **iOS / Android** | No | Limited | Mobile Office doesn't show custom ribbon UI; add-ins are accessed through a menu. Formatting commands may not work on PowerPoint mobile. |
-
-## Why no iOS/Android add-in?
-
-Office mobile apps don't support custom ribbon commands. The mobile add-in experience is limited to a taskpane opened from a menu, and the formatting APIs for PowerPoint are very limited on mobile. It wouldn't replicate the "Quick Access Toolbar" experience, so we focused on desktop and web where the full ribbon works.
+| Platform | Status |
+|----------|--------|
+| **Windows desktop (exe)** | Full support — Electron installer |
+| **Mac desktop (dmg)** | Full support — Electron dmg |
+| **Office on the Web** | Full support — sideload manifest |
+| **iOS / Android** | Capacitor wrapper or web sideload |
 
 ## Quick start
 
 ### Prerequisites
 
-- [Node.js](https://nodejs.org/) 18 or later
-- A Microsoft 365 subscription (for desktop) or a free account (for Office on the Web)
+- [Node.js](https://nodejs.org/) 18+
+- Microsoft 365 subscription (desktop) or free account (Office on Web)
 
-### 1. Install dependencies
+### 1. Install
 
 ```bash
 cd office-quick-access-addon
 npm install
 ```
 
-### 2. Start the dev server
+### 2. Start dev server
 
 ```bash
 npm start
 ```
 
-This starts a local HTTPS server at `https://localhost:3000`.
+Starts a local HTTPS server at `https://localhost:3000`.
 
 ### 3. Sideload the add-in
 
-#### Option A: Desktop (Windows/Mac)
-
+**Desktop (Windows/Mac):**
 ```bash
-# For Word:
-npm run sideload:word
-
-# For Excel:
-npm run sideload:excel
-
-# For PowerPoint:
-npm run sideload:powerpoint
+npm run sideload:word       # or :excel or :powerpoint
 ```
 
-#### Option B: Office on the Web
+**Office on the Web:**
+1. Open Word/Excel/PowerPoint at office.com
+2. Insert > Office Add-ins > Upload My Add-in
+3. Upload the manifest from `manifests/` (word, excel, or powerpoint)
 
-1. Open Word, Excel, or PowerPoint at [office.com](https://www.office.com)
-2. Go to **Insert** → **Office Add-ins** → **Upload My Add-in**
-3. Upload the corresponding manifest file from the `manifests/` folder:
-   - `word-manifest.xml` for Word
-   - `excel-manifest.xml` for Excel
-   - `powerpoint-manifest.xml` for PowerPoint
+**Manual sideload (Windows):**
+1. Copy manifest to `%LocalAppData%\Microsoft\Office\16.0\Wef\`
+2. Open Office app > Insert > My Add-ins > Shared Folder
 
-#### Option C: Manual sideload on Windows
+### 4. Use it
 
-1. Open a file share at `\\localhost\c$\Users\<you>\AppData\Local\Microsoft\Office\16.0\Wef\`
-2. Copy the desired manifest XML into that folder
-3. Open the Office app, go to **Insert** → **My Add-ins** → **Shared Folder**
+Click the **SuperQAT** tab in the ribbon, then **Open SuperQAT**. Browse or scroll the dropdown, select a command, click **Run** (or double-click).
 
-### 4. Use the add-in
+## Building releases
 
-After sideloading, you'll see a new **"Quick Access"** tab in the ribbon. Click any dropdown to access commands. Click **"Open Panel"** for the full side-panel view.
+### Windows .exe
+
+```bash
+npm run electron:build:win
+```
+
+Output: `release/SuperQAT Setup.exe` (NSIS installer)
+
+### Mac .dmg
+
+```bash
+npm run electron:build:mac
+```
+
+Output: `release/SuperQAT.dmg`
+
+### Both at once
+
+```bash
+npm run electron:build:all
+```
+
+## Hosting modes
+
+### Local server (development)
+
+```bash
+npm start
+```
+
+Manifests point to `https://localhost:3000`. The dev server must be running.
+
+### Remote domain (production)
+
+1. Build: `npm run build:prod`
+2. Upload the `dist/` folder to your HTTPS host (e.g. superqat.app)
+3. Point manifests to your domain:
+
+```bash
+npm run set-host https://superqat.app
+```
+
+Or interactively:
+```bash
+npm run set-host
+```
+
+To switch back to local:
+```bash
+npm run set-host local
+```
+
+### Mobile (iOS/Android via Capacitor)
+
+```bash
+npm run build:prod
+npm run cap:add:ios       # or cap:add:android
+npm run cap:sync
+```
+
+Then open the native project in Xcode / Android Studio and build.
 
 ## Project structure
 
 ```
 office-quick-access-addon/
 ├── manifests/
-│   ├── word-manifest.xml       # Word ribbon + commands
-│   ├── excel-manifest.xml      # Excel ribbon + commands
-│   └── powerpoint-manifest.xml # PowerPoint ribbon + commands
+│   ├── word-manifest.xml
+│   ├── excel-manifest.xml
+│   └── powerpoint-manifest.xml
 ├── src/
-│   ├── assets/                 # Icons (16, 32, 64, 80, 128 px)
+│   ├── assets/              # Icons (16, 32, 64, 80, 128 px)
 │   ├── commands/
-│   │   ├── commands.js         # Ribbon command functions (ExecuteFunction)
-│   │   └── commands.html       # Host page for command functions
+│   │   ├── commands.js      # Ribbon command stubs
+│   │   └── commands.html
 │   └── taskpane/
-│       ├── taskpane.html       # Side-panel UI
-│       ├── taskpane.css        # Styles
-│       └── taskpane.js         # Panel button handlers
-├── webpack.config.js           # Build configuration
+│       ├── taskpane.html    # Dropdown UI
+│       ├── taskpane.css     # Styles
+│       └── taskpane.js      # 649 commands + Office.js handlers
+├── electron/
+│   └── main.js              # Electron main process
+├── scripts/
+│   └── set-host.js          # Switch manifests between local/remote
+├── webpack.config.js        # Dev build
+├── webpack.prod.js          # Production build
+├── electron-builder.yml     # Windows/Mac packaging config
+├── capacitor.config.ts      # iOS/Android config
 ├── package.json
 └── README.md
 ```
 
-## Limitations
-
-Some native Office commands cannot be triggered from add-ins because the Office.js API doesn't expose them:
-
-| Command | Status | Workaround |
-|---------|--------|------------|
-| Undo | Not available | Shows Ctrl+Z / Cmd+Z reminder |
-| Redo | Not available | Shows Ctrl+Y / Cmd+Shift+Z reminder |
-| Print | Not available | Shows Ctrl+P / Cmd+P reminder |
-| Open / New | Not available | Use File menu |
-| Copy / Paste | Not available in document | Use Ctrl+C / Ctrl+V |
-| Spell Check | Not available | Use Review tab or F7 |
-| Track Changes | Not available | Use Review tab |
-
 ## Deploying to production
 
-1. Build the project: `npm run build`
-2. Host the `dist/` folder on an HTTPS web server
-3. Update all three manifest files: replace `https://localhost:3000` with your production URL
+1. `npm run build:prod`
+2. Upload `dist/` to an HTTPS host
+3. `npm run set-host https://yourdomain.app`
 4. Distribute manifests via:
-   - **Microsoft 365 Admin Center** (organization-wide deployment)
+   - **Microsoft 365 Admin Center** (org-wide)
    - **AppSource** (public marketplace)
-   - **SharePoint App Catalog** (SharePoint-based orgs)
+   - **SharePoint App Catalog**
 
 ## License
 
