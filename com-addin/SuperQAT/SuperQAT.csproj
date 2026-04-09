@@ -1,0 +1,48 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net48</TargetFramework>
+    <OutputType>Library</OutputType>
+    <RootNamespace>SuperQAT</RootNamespace>
+    <AssemblyName>SuperQAT</AssemblyName>
+    <UseWindowsForms>true</UseWindowsForms>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="Extensibility">
+      <HintPath>$(ProgramFiles)\Microsoft Visual Studio\2022\Community\VSTO\PIA\Office15\Extensibility.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Microsoft.Office.Interop.Word">
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Microsoft.Office.Interop.Excel">
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Microsoft.Office.Interop.PowerPoint">
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="office">
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="stdole">
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Runtime.InteropServices" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Office.Interop.Word" Version="15.0.4797.1004" />
+    <PackageReference Include="Microsoft.Office.Interop.Excel" Version="15.0.4795.1001" />
+    <PackageReference Include="Microsoft.Office.Interop.PowerPoint" Version="15.0.4420.1017" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="SuperQATRibbon.xml" />
+  </ItemGroup>
+
+</Project>

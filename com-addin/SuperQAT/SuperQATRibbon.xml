@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<customUI xmlns="http://schemas.microsoft.com/office/2009/07/customui"
+          onLoad="Ribbon_Load">
+  <ribbon>
+    <tabs>
+      <tab id="SuperQATTab" label="SuperQAT">
+        <group id="SuperQATGroup" label="Commands">
+          <button id="OpenSuperQAT"
+                  label="Open SuperQAT"
+                  size="large"
+                  imageMso="CustomizeQuickAccessToolbar"
+                  onAction="OnOpenPanel"
+                  supertip="Open the SuperQAT panel with all 649 Quick Access Toolbar commands. Click any command to execute it instantly." />
+        </group>
+      </tab>
+    </tabs>
+  </ribbon>
+</customUI>
