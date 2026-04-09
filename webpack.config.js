@@ -1,6 +1,23 @@
 const path = require("path");
+const fs = require("fs");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const CopyWebpackPlugin = require("copy-webpack-plugin");
+
+// Use the certs installed by office-addin-dev-certs if available
+function getHttpsConfig() {
+  const home = process.env.HOME || process.env.USERPROFILE || "";
+  const certDir = path.join(home, ".office-addin-dev-certs");
+  const key = path.join(certDir, "localhost.key");
+  const cert = path.join(certDir, "localhost.crt");
+  const ca = path.join(certDir, "ca.crt");
+
+  if (fs.existsSync(key) && fs.existsSync(cert)) {
+    const options = { key: fs.readFileSync(key), cert: fs.readFileSync(cert) };
+    if (fs.existsSync(ca)) options.ca = fs.readFileSync(ca);
+    return { type: "https", options: options };
+  }
+  return "https";
+}
 
 module.exports = {
   entry: {
@@ -17,7 +34,7 @@ module.exports = {
       directory: path.join(__dirname, "dist"),
     },
     port: 3000,
-    server: "https",
+    server: getHttpsConfig(),
     headers: {
       "Access-Control-Allow-Origin": "*",
     },
