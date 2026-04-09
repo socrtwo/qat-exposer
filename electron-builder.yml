@@ -1,48 +1,28 @@
-appId: com.sf2gh.migrator
-productName: SF2GH Migrator
+appId: com.superqat.addin
+productName: SuperQAT
 directories:
-  output: dist
+  output: release
 files:
-  - src/**/*
+  - dist/**/*
   - electron/**/*
-  - public/**/*
   - package.json
+extraResources:
+  - manifests/**/*
 mac:
-  category: public.app-category.developer-tools
+  category: public.app-category.productivity
   target:
     - dmg
-    - zip
-  icon: public/icons/icon-512.png
+  icon: src/assets/icon-128.png
+dmg:
+  title: SuperQAT
 win:
   target:
     - nsis
-    - portable
-    - appx
-  icon: public/icons/icon-512.png
-appx:
-  publisherDisplayName: SF2GH Migrator
-  identityName: SF2GHMigrator
-  publisher: CN=SF2GH Migrator
-  backgroundColor: '#0d1117'
-linux:
-  target:
-    - AppImage
-    - deb
-    - rpm
-  category: Development
-  icon: public/icons/icon-512.png
-  maintainer: socrtwo@users.noreply.github.com
-flatpak:
-  runtimeVersion: '22.08'
-  sdk: org.freedesktop.Sdk
-  runtime: org.freedesktop.Platform
-  branch: stable
-  finishArgs:
-    - --share=network
-    - --socket=x11
-    - --socket=wayland
-    - --filesystem=home
-    - --device=dri
+  icon: src/assets/icon-128.png
 nsis:
   oneClick: false
   allowToChangeInstallationDirectory: true
+  installerIcon: src/assets/icon-128.png
+  uninstallerIcon: src/assets/icon-128.png
+  menuCategory: SuperQAT
+  shortcutName: SuperQAT

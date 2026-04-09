@@ -1,45 +1,45 @@
 {
-  "name": "sf2gh-migrator",
-  "version": "1.5.3",
-  "description": "Cross-platform app to migrate SourceForge projects to GitHub",
+  "name": "superqat",
+  "version": "2.0.0",
+  "description": "Office Add-in: all 649 Quick Access Toolbar commands in one dropdown",
   "main": "electron/main.js",
   "scripts": {
-    "start": "node src/index.js",
-    "dev": "node src/index.js",
-    "test": "jest --forceExit --detectOpenHandles",
-    "test:coverage": "jest --coverage --forceExit --detectOpenHandles",
-    "lint": "eslint src/ tests/",
-    "electron": "electron electron/main.js",
-    "electron:build": "electron-builder",
-    "cap:init": "cap init sf2gh-migrator com.sf2gh.migrator --web-dir public",
+    "start": "webpack serve --config webpack.config.js --mode development",
+    "build": "webpack --config webpack.config.js --mode production",
+    "electron": "npm run build && electron electron/main.js",
+    "electron:build:win": "npm run build && electron-builder --win",
+    "electron:build:mac": "npm run build && electron-builder --mac",
+    "electron:build:all": "npm run build && electron-builder --win --mac",
+    "sideload:word": "office-addin-debugging start manifests/word-manifest.xml",
+    "sideload:excel": "office-addin-debugging start manifests/excel-manifest.xml",
+    "sideload:powerpoint": "office-addin-debugging start manifests/powerpoint-manifest.xml",
+    "validate": "office-addin-manifest validate manifests/word-manifest.xml && office-addin-manifest validate manifests/excel-manifest.xml && office-addin-manifest validate manifests/powerpoint-manifest.xml",
+    "build:prod": "webpack --config webpack.prod.js",
+    "deploy:local": "node scripts/set-host.js local && npm run build",
+    "deploy:remote": "node scripts/set-host.js",
+    "cap:sync": "npm run build:prod && cap sync",
     "cap:add:android": "cap add android",
     "cap:add:ios": "cap add ios",
-    "cap:sync": "cap sync",
-    "release": "node -e \"const v=require('./package.json').version; require('child_process').execSync('git tag v'+v+' && git push origin v'+v, {stdio:'inherit'})\""
+    "set-host": "node scripts/set-host.js",
+    "lint": "eslint src/"
   },
-  "keywords": ["sourceforge", "github", "migration", "git", "svn"],
-  "author": "Paul D Pruitt",
-  "license": "MIT",
   "dependencies": {
-    "express": "^4.21.2",
-    "cors": "^2.8.5",
-    "helmet": "^8.1.0",
-    "express-rate-limit": "^7.5.0",
-    "winston": "^3.17.0"
+    "@microsoft/office-js": "^1.1.89"
   },
   "devDependencies": {
-    "jest": "^29.7.0",
-    "supertest": "^7.1.0",
-    "eslint": "^8.57.0"
+    "copy-webpack-plugin": "^12.0.2",
+    "html-webpack-plugin": "^5.6.0",
+    "webpack": "^5.90.0",
+    "webpack-cli": "^5.1.4",
+    "webpack-dev-server": "^5.0.0",
+    "office-addin-debugging": "^5.1.0",
+    "office-addin-manifest": "^1.13.0"
   },
   "optionalDependencies": {
     "electron": "^33.4.0",
     "electron-builder": "^25.1.8",
     "@capacitor/core": "^7.2.0",
-    "@capacitor/cli": "^7.2.0",
-    "capacitor-native-git": "file:plugins/capacitor-native-git"
+    "@capacitor/cli": "^7.2.0"
   },
-  "engines": {
-    "node": ">=18.0.0"
-  }
+  "license": "MIT"
 }
