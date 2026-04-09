@@ -197,10 +197,6 @@
     ["Align Top Center", function(){ribbon("Table Layout","Align Top Center");}],
     ["Align Top Left", function(){ribbon("Table Layout","Align Top Left");}],
     ["Align Top Right", function(){ribbon("Table Layout","Align Top Right");}],
-    ["All Caps", function(){
-      if(isWord()){Word.run(function(c){var s=c.document.getSelection();s.font.load("allCaps");return c.sync().then(function(){s.font.allCaps=!s.font.allCaps;return c.sync();});}).then(function(){showToast("All Caps toggled.");}).catch(function(e){showToast("Error: "+e.message);});}
-      else{showToast("Not available for this app.");}
-    }],
     ["Arrange All Windows", function(){ribbon("View","Arrange All");}],
     ["Attach Template", function(){ribbon("Developer","Document Template");}],
     ["AutoCorrect Options", function(){ribbon("File","Options > Proofing > AutoCorrect Options");}],
@@ -208,11 +204,18 @@
     ["AutoFit Window", function(){ribbon("Table Layout","AutoFit > AutoFit Window");}],
     ["AutoFormat", function(){ribbon("File","Options > Proofing > AutoFormat");}],
     ["AutoSave", function(){ribbon("File","AutoSave toggle (top-left)");}],
+    ["AutoShapes: Action Buttons", function(){ribbon("Insert","Shapes > Action Buttons");}],
+    ["AutoShapes: Basic Shapes", function(){ribbon("Insert","Shapes > Basic Shapes");}],
+    ["AutoShapes: Block Arrows", function(){ribbon("Insert","Shapes > Block Arrows");}],
+    ["AutoShapes: Callouts", function(){ribbon("Insert","Shapes > Callouts");}],
+    ["AutoShapes: Equation Shapes", function(){ribbon("Insert","Shapes > Equation Shapes");}],
+    ["AutoShapes: Flowchart", function(){ribbon("Insert","Shapes > Flowchart");}],
+    ["AutoShapes: Lines", function(){ribbon("Insert","Shapes > Lines");}],
+    ["AutoShapes: Rectangles", function(){ribbon("Insert","Shapes > Rectangles");}],
+    ["AutoShapes: Stars and Banners", function(){ribbon("Insert","Shapes > Stars and Banners");}],
     ["AutoText", function(){ribbon("Insert","Quick Parts > AutoText");}],
-    ["Blank Page", function(){
-      if(isWord()){Word.run(function(c){c.document.getSelection().insertBreak("Page","After");return c.sync();}).then(function(){showToast("Blank page inserted.");}).catch(function(e){showToast("Error: "+e.message);});}
-      else{showToast("Only available in Word.");}
-    }],
+    ["Block Authors", function(){ribbon("Review","Block Authors");}],
+    ["Block Authors: All My Edited Sections", function(){ribbon("Review","Block Authors > Block All My Edited Sections");}],
     ["Bold", function(){toggleFont("bold");}],
     ["Bookmark", function(){shortcut("Ctrl+Shift+F5");}],
     ["Borders and Shading", function(){ribbon("Home","Borders dropdown > Borders and Shading");}],
@@ -224,42 +227,21 @@
     ["Calculate", function(){ribbon("Review","Word Count / Formula");}],
     ["Cell Margins", function(){ribbon("Table Layout","Cell Margins");}],
     ["Center", function(){setAlignment("Center");}],
-    ["Change Case: UPPERCASE", function(){
-      if(isWord()){Word.run(function(c){var s=c.document.getSelection();s.load("text");return c.sync().then(function(){s.insertText(s.text.toUpperCase(),"Replace");return c.sync();});}).then(function(){showToast("Changed to UPPERCASE.");}).catch(function(e){showToast("Error: "+e.message);});}
-      else{showToast("Not available for this app.");}
-    }],
-    ["Change Case: lowercase", function(){
-      if(isWord()){Word.run(function(c){var s=c.document.getSelection();s.load("text");return c.sync().then(function(){s.insertText(s.text.toLowerCase(),"Replace");return c.sync();});}).then(function(){showToast("Changed to lowercase.");}).catch(function(e){showToast("Error: "+e.message);});}
-      else{showToast("Not available for this app.");}
-    }],
-    ["Change Case: Capitalize Each Word", function(){
-      if(isWord()){Word.run(function(c){var s=c.document.getSelection();s.load("text");return c.sync().then(function(){s.insertText(s.text.replace(/\b\w/g,function(l){return l.toUpperCase();}),"Replace");return c.sync();});}).then(function(){showToast("Capitalized each word.");}).catch(function(e){showToast("Error: "+e.message);});}
-      else{showToast("Not available for this app.");}
-    }],
-    ["Change Case: Sentence case", function(){
-      if(isWord()){Word.run(function(c){var s=c.document.getSelection();s.load("text");return c.sync().then(function(){var t=s.text.toLowerCase();t=t.charAt(0).toUpperCase()+t.slice(1);s.insertText(t,"Replace");return c.sync();});}).then(function(){showToast("Sentence case applied.");}).catch(function(e){showToast("Error: "+e.message);});}
-      else{showToast("Not available for this app.");}
-    }],
-    ["Change Case: tOGGLE cASE", function(){
-      if(isWord()){Word.run(function(c){var s=c.document.getSelection();s.load("text");return c.sync().then(function(){var t=s.text.split("").map(function(ch){return ch===ch.toUpperCase()?ch.toLowerCase():ch.toUpperCase();}).join("");s.insertText(t,"Replace");return c.sync();});}).then(function(){showToast("Case toggled.");}).catch(function(e){showToast("Error: "+e.message);});}
-      else{showToast("Not available for this app.");}
-    }],
     ["Change Chart Type", function(){ribbon("Chart Design","Change Chart Type");}],
     ["Change Colors (Chart)", function(){ribbon("Chart Design","Change Colors");}],
     ["Change Picture", function(){ribbon("Picture Format","Change Picture");}],
     ["Change Shape", function(){ribbon("Shape Format","Edit Shape > Change Shape");}],
-    ["Character Spacing: Expanded", function(){ribbon("Home","Font dialog > Advanced > Spacing > Expanded");}],
     ["Character Spacing: Condensed", function(){ribbon("Home","Font dialog > Advanced > Spacing > Condensed");}],
+    ["Character Spacing: Expanded", function(){ribbon("Home","Font dialog > Advanced > Spacing > Expanded");}],
     ["Check Compatibility", function(){ribbon("File","Info > Check for Issues > Compatibility");}],
-    ["Clear All Formatting", function(){
-      if(isWord()){Word.run(function(c){c.document.getSelection().font.set({bold:false,italic:false,underline:"None",strikethrough:false,superscript:false,subscript:false,color:"#000000",highlightColor:null});return c.sync();}).then(function(){showToast("Formatting cleared.");}).catch(function(e){showToast("Error: "+e.message);});}
-      else{shortcut("Ctrl+Space");}
-    }],
     ["Clipboard Pane", function(){shortcut("Ctrl+C twice (or Home > Clipboard launcher)");}],
     ["Close", function(){shortcut("Ctrl+W");}],
     ["Close All", function(){ribbon("File","Close All");}],
     ["Close Header and Footer", function(){ribbon("Header & Footer","Close Header and Footer");}],
+    ["Close Outline View", function(){ribbon("Outlining","Close Outline View");}],
     ["Collapse All Headings", function(){ribbon("View","Outline > Collapse All");}],
+    ["Collapse Heading", function(){ribbon("Home","Right-click heading > Expand/Collapse > Collapse Heading");}],
+    ["Collapse Subdocuments", function(){ribbon("Outlining","Master Document > Collapse Subdocuments");}],
     ["Color: Aqua", function(){setFontColor("#00FFFF");}],
     ["Color: Black", function(){setFontColor("#000000");}],
     ["Color: Blue", function(){setFontColor("#0000FF");}],
@@ -300,24 +282,43 @@
     ["Color: White", function(){setFontColor("#FFFFFF");}],
     ["Color: Yellow", function(){setFontColor("#FFFF00");}],
     ["Columns: One", function(){ribbon("Layout","Columns > One");}],
-    ["Columns: Two", function(){ribbon("Layout","Columns > Two");}],
     ["Columns: Three", function(){ribbon("Layout","Columns > Three");}],
+    ["Columns: Two", function(){ribbon("Layout","Columns > Two");}],
+    ["Combine Characters", function(){ribbon("Home","Combine Characters (Asian Layout)");}],
     ["Combine Documents", function(){ribbon("Review","Compare > Combine");}],
     ["Compare Documents", function(){ribbon("Review","Compare > Compare");}],
     ["Compress Pictures", function(){ribbon("Picture Format","Compress Pictures");}],
-    ["Content Control: Plain Text", function(){ribbon("Developer","Plain Text Content Control");}],
-    ["Content Control: Rich Text", function(){ribbon("Developer","Rich Text Content Control");}],
-    ["Content Control: Picture", function(){ribbon("Developer","Picture Content Control");}],
-    ["Content Control: Combo Box", function(){ribbon("Developer","Combo Box Content Control");}],
-    ["Content Control: Drop-Down List", function(){ribbon("Developer","Drop-Down List Content Control");}],
-    ["Content Control: Date Picker", function(){ribbon("Developer","Date Picker Content Control");}],
+    ["Connector: Curved", function(){ribbon("Insert","Shapes > Lines > Curved Connector");}],
+    ["Connector: Curved Arrow", function(){ribbon("Insert","Shapes > Lines > Curved Arrow Connector");}],
+    ["Connector: Elbow", function(){ribbon("Insert","Shapes > Lines > Elbow Connector");}],
+    ["Connector: Elbow Arrow", function(){ribbon("Insert","Shapes > Lines > Elbow Arrow Connector");}],
+    ["Connector: Straight", function(){ribbon("Insert","Shapes > Lines > Straight Connector");}],
+    ["Connector: Straight Arrow", function(){ribbon("Insert","Shapes > Lines > Straight Arrow Connector");}],
+    ["Content Control Properties", function(){ribbon("Developer","Properties (select control first)");}],
+    ["Content Control: Building Block Gallery", function(){ribbon("Developer","Building Block Gallery Content Control");}],
     ["Content Control: Check Box", function(){ribbon("Developer","Check Box Content Control");}],
+    ["Content Control: Combo Box", function(){ribbon("Developer","Combo Box Content Control");}],
+    ["Content Control: Date Picker", function(){ribbon("Developer","Date Picker Content Control");}],
+    ["Content Control: Drop-Down List", function(){ribbon("Developer","Drop-Down List Content Control");}],
+    ["Content Control: Legacy Check Box", function(){ribbon("Developer","Legacy Tools > Check Box Form Field");}],
+    ["Content Control: Legacy Drop-Down", function(){ribbon("Developer","Legacy Tools > Drop-Down Form Field");}],
+    ["Content Control: Legacy Text Field", function(){ribbon("Developer","Legacy Tools > Text Form Field");}],
+    ["Content Control: Picture", function(){ribbon("Developer","Picture Content Control");}],
+    ["Content Control: Plain Text", function(){ribbon("Developer","Plain Text Content Control");}],
     ["Content Control: Repeating Section", function(){ribbon("Developer","Repeating Section Content Control");}],
+    ["Content Control: Rich Text", function(){ribbon("Developer","Rich Text Content Control");}],
+    ["Continue Numbering", function(){ribbon("Home","Right-click numbered list > Continue Numbering");}],
     ["Convert Table to Text", function(){ribbon("Table Layout","Convert to Text");}],
     ["Convert Text to Table", function(){ribbon("Insert","Table > Convert Text to Table");}],
+    ["Copilot: Draft with Copilot", function(){ribbon("Home","Copilot > Draft with Copilot");}],
+    ["Copilot: Explain", function(){ribbon("Home","Copilot > Explain");}],
+    ["Copilot: Rewrite", function(){ribbon("Home","Copilot > Rewrite");}],
+    ["Copilot: Summarize", function(){ribbon("Home","Copilot > Summarize");}],
+    ["Copilot: Undo Copilot Edit", function(){ribbon("Home","Copilot > Undo Copilot Edit");}],
     ["Copy", function(){shortcut("Ctrl+C");}],
     ["Cover Page", function(){ribbon("Insert","Cover Page");}],
     ["Create AutoText", function(){shortcut("Alt+F3");}],
+    ["Create Subdocument", function(){ribbon("Outlining","Master Document > Create");}],
     ["Cross-reference", function(){ribbon("References","Cross-reference");}],
     ["Custom Margins", function(){ribbon("Layout","Margins > Custom Margins");}],
     ["Customize Keyboard", function(){ribbon("File","Options > Customize Ribbon > Customize...");}],
@@ -325,10 +326,6 @@
     ["Customize Ribbon", function(){ribbon("File","Options > Customize Ribbon");}],
     ["Cut", function(){shortcut("Ctrl+X");}],
     ["Date and Time", function(){ribbon("Insert","Date & Time");}],
-    ["Decrease Font Size", function(){
-      if(isWord()){Word.run(function(c){var s=c.document.getSelection();s.font.load("size");return c.sync().then(function(){s.font.size=Math.max(1,s.font.size-1);return c.sync();});}).then(function(){showToast("Font size decreased.");}).catch(function(e){showToast("Error: "+e.message);});}
-      else{shortcut("Ctrl+Shift+<");}
-    }],
     ["Decrease Indent", function(){setIndent("left",0);}],
     ["Decrease List Level", function(){shortcut("Shift+Tab in list");}],
     ["Define New Bullet", function(){ribbon("Home","Bullets > Define New Bullet");}],
@@ -342,6 +339,7 @@
     ["Delete Comment", function(){ribbon("Review","Delete Comment");}],
     ["Delete Page", function(){ribbon("Select page content, then Delete");}],
     ["Delete Rows", function(){ribbon("Table Layout","Delete > Delete Rows");}],
+    ["Delete Subdocument", function(){ribbon("Outlining","Master Document > Delete (Unlink)");}],
     ["Delete Table", function(){ribbon("Table Layout","Delete > Delete Table");}],
     ["Demote (Outline)", function(){ribbon("Outlining","Demote");}],
     ["Demote to Body Text", function(){ribbon("Outlining","Demote to Body Text");}],
@@ -351,21 +349,33 @@
     ["Distribute Columns Evenly", function(){ribbon("Table Layout","Distribute Columns");}],
     ["Distribute Rows Evenly", function(){ribbon("Table Layout","Distribute Rows");}],
     ["Document Inspector", function(){ribbon("File","Info > Check for Issues > Inspect Document");}],
+    ["Document Map Toggle", function(){ribbon("View","Navigation Pane checkbox");}],
     ["Document Protection", function(){ribbon("Review","Restrict Editing");}],
     ["Don't Hyphenate", function(){ribbon("Layout","Hyphenation > None");}],
+    ["Dot Accent", function(){ribbon("Home","Font dialog > Effects > Dot Accent");}],
     ["Double Strikethrough", function(){ribbon("Home","Font dialog > Effects > Double Strikethrough");}],
     ["Double Underline", function(){shortcut("Ctrl+Shift+D");}],
     ["Draft View", function(){ribbon("View","Draft");}],
     ["Draw Table", function(){ribbon("Insert","Table > Draw Table");}],
     ["Draw Text Box", function(){ribbon("Insert","Text Box > Draw Text Box");}],
     ["Drawing Canvas", function(){ribbon("Insert","Shapes > New Drawing Canvas");}],
+    ["Drawing Pen", function(){ribbon("Draw","Pens > Drawing Pen");}],
     ["Drop Cap: Dropped", function(){ribbon("Insert","Drop Cap > Dropped");}],
     ["Drop Cap: In Margin", function(){ribbon("Insert","Drop Cap > In Margin");}],
     ["Drop Cap: None", function(){ribbon("Insert","Drop Cap > None");}],
-    ["Edit Header", function(){ribbon("Insert","Header > Edit Header");}],
     ["Edit Footer", function(){ribbon("Insert","Footer > Edit Footer");}],
+    ["Edit Header", function(){ribbon("Insert","Header > Edit Header");}],
+    ["Edit Points (Shape)", function(){ribbon("Shape Format","Edit Shape > Edit Points");}],
     ["Editing Restrictions", function(){ribbon("Review","Restrict Editing");}],
     ["Editor", function(){ribbon("Home","Editor");}],
+    ["Editor: Clarity Refinements", function(){ribbon("Home","Editor > Clarity");}],
+    ["Editor: Conciseness", function(){ribbon("Home","Editor > Conciseness");}],
+    ["Editor: Formality", function(){ribbon("Home","Editor > Formality");}],
+    ["Editor: Grammar Corrections", function(){ribbon("Home","Editor > Grammar");}],
+    ["Editor: Inclusiveness", function(){ribbon("Home","Editor > Inclusiveness");}],
+    ["Editor: Punctuation Conventions", function(){ribbon("Home","Editor > Punctuation");}],
+    ["Editor: Similarity Checker", function(){ribbon("Home","Editor > Similarity");}],
+    ["Editor: Spelling Corrections", function(){ribbon("Home","Editor > Spelling");}],
     ["Effects (Theme)", function(){ribbon("Design","Effects");}],
     ["Email as Attachment", function(){ribbon("File","Share > Email");}],
     ["Embed Fonts", function(){ribbon("File","Options > Save > Embed Fonts");}],
@@ -374,24 +384,22 @@
     ["Endnote: Insert", function(){shortcut("Ctrl+Alt+D");}],
     ["Envelopes", function(){ribbon("Mailings","Envelopes");}],
     ["Equation", function(){shortcut("Alt+=");}],
+    ["Eraser (Ink)", function(){ribbon("Draw","Eraser");}],
     ["Eraser (Table)", function(){ribbon("Table Layout","Eraser");}],
     ["Even Page Section Break", function(){wordInsertBreak("EvenPage");}],
     ["Expand All Headings", function(){ribbon("View","Outline > Expand All");}],
+    ["Expand Drawing Canvas", function(){ribbon("Drawing Canvas Format","Expand");}],
+    ["Expand Heading", function(){ribbon("Home","Right-click heading > Expand/Collapse > Expand");}],
     ["Export to PDF/XPS", function(){ribbon("File","Export > Create PDF/XPS");}],
     ["Field", function(){ribbon("Insert","Quick Parts > Field");}],
     ["Field Codes: Toggle", function(){shortcut("Alt+F9");}],
-    ["File: New", function(){shortcut("Ctrl+N");}],
-    ["File: Open", function(){shortcut("Ctrl+O");}],
-    ["File: Print", function(){shortcut("Ctrl+P");}],
-    ["File: Save", function(){
-      Office.context.document.save(Office.AsyncResultStatus||{},function(r){
-        if(r.status===Office.AsyncResultStatus.Failed){showToast("Save failed: "+r.error.message);}else{showToast("Saved!");}
-      });
-    }],
-    ["File: Save As", function(){shortcut("F12 or Ctrl+Shift+S");}],
     ["File: Close", function(){shortcut("Ctrl+W");}],
     ["File: Info", function(){ribbon("File","Info");}],
+    ["File: New", function(){shortcut("Ctrl+N");}],
+    ["File: Open", function(){shortcut("Ctrl+O");}],
     ["File: Options", function(){ribbon("File","Options");}],
+    ["File: Print", function(){shortcut("Ctrl+P");}],
+    ["File: Save As", function(){shortcut("F12 or Ctrl+Shift+S");}],
     ["Find", function(){shortcut("Ctrl+F");}],
     ["Find and Replace", function(){shortcut("Ctrl+H");}],
     ["Find Next", function(){shortcut("Ctrl+G or F5");}],
@@ -399,6 +407,24 @@
     ["Flip Horizontal", function(){ribbon("Shape Format","Rotate > Flip Horizontal");}],
     ["Flip Vertical", function(){ribbon("Shape Format","Rotate > Flip Vertical");}],
     ["Focus Mode", function(){ribbon("View","Focus");}],
+    ["Font Dialog", function(){shortcut("Ctrl+D");}],
+    ["Font Size: 10", function(){setFontSize(10);}],
+    ["Font Size: 10.5", function(){setFontSize(10.5);}],
+    ["Font Size: 11", function(){setFontSize(11);}],
+    ["Font Size: 12", function(){setFontSize(12);}],
+    ["Font Size: 14", function(){setFontSize(14);}],
+    ["Font Size: 16", function(){setFontSize(16);}],
+    ["Font Size: 18", function(){setFontSize(18);}],
+    ["Font Size: 20", function(){setFontSize(20);}],
+    ["Font Size: 22", function(){setFontSize(22);}],
+    ["Font Size: 24", function(){setFontSize(24);}],
+    ["Font Size: 26", function(){setFontSize(26);}],
+    ["Font Size: 28", function(){setFontSize(28);}],
+    ["Font Size: 36", function(){setFontSize(36);}],
+    ["Font Size: 48", function(){setFontSize(48);}],
+    ["Font Size: 72", function(){setFontSize(72);}],
+    ["Font Size: 8", function(){setFontSize(8);}],
+    ["Font Size: 9", function(){setFontSize(9);}],
     ["Font: Arial", function(){setFontName("Arial");}],
     ["Font: Arial Black", function(){setFontName("Arial Black");}],
     ["Font: Calibri", function(){setFontName("Calibri");}],
@@ -422,81 +448,45 @@
     ["Font: Times New Roman", function(){setFontName("Times New Roman");}],
     ["Font: Trebuchet MS", function(){setFontName("Trebuchet MS");}],
     ["Font: Verdana", function(){setFontName("Verdana");}],
-    ["Font Dialog", function(){shortcut("Ctrl+D");}],
-    ["Font Size: 8", function(){setFontSize(8);}],
-    ["Font Size: 9", function(){setFontSize(9);}],
-    ["Font Size: 10", function(){setFontSize(10);}],
-    ["Font Size: 10.5", function(){setFontSize(10.5);}],
-    ["Font Size: 11", function(){setFontSize(11);}],
-    ["Font Size: 12", function(){setFontSize(12);}],
-    ["Font Size: 14", function(){setFontSize(14);}],
-    ["Font Size: 16", function(){setFontSize(16);}],
-    ["Font Size: 18", function(){setFontSize(18);}],
-    ["Font Size: 20", function(){setFontSize(20);}],
-    ["Font Size: 22", function(){setFontSize(22);}],
-    ["Font Size: 24", function(){setFontSize(24);}],
-    ["Font Size: 26", function(){setFontSize(26);}],
-    ["Font Size: 28", function(){setFontSize(28);}],
-    ["Font Size: 36", function(){setFontSize(36);}],
-    ["Font Size: 48", function(){setFontSize(48);}],
-    ["Font Size: 72", function(){setFontSize(72);}],
     ["Footer", function(){ribbon("Insert","Footer");}],
     ["Footnote: Insert", function(){shortcut("Ctrl+Alt+F");}],
     ["Format Painter", function(){shortcut("Ctrl+Shift+C to copy, Ctrl+Shift+V to paste format");}],
     ["Formatting Marks (Show/Hide)", function(){shortcut("Ctrl+Shift+8 or Ctrl+*");}],
+    ["Frame Format", function(){ribbon("Format","Frame (legacy or right-click frame)");}],
     ["Full Screen Reading", function(){ribbon("View","Read Mode");}],
     ["Go Back", function(){shortcut("Alt+Left Arrow");}],
     ["Go Forward", function(){shortcut("Alt+Right Arrow");}],
     ["Go To", function(){shortcut("Ctrl+G or F5");}],
     ["Go to Bookmark", function(){shortcut("Ctrl+Shift+F5");}],
-    ["Go to Header", function(){ribbon("Insert","Header > Edit Header");}],
     ["Go to Footer", function(){ribbon("Insert","Footer > Edit Footer");}],
+    ["Go to Header", function(){ribbon("Insert","Header > Edit Header");}],
     ["Go to Next Comment", function(){ribbon("Review","Next Comment");}],
-    ["Go to Previous Comment", function(){ribbon("Review","Previous Comment");}],
     ["Go to Next Section", function(){ribbon("Navigate: Ctrl+G > Section");}],
+    ["Go to Previous Comment", function(){ribbon("Review","Previous Comment");}],
     ["Greeting Line (Mail Merge)", function(){ribbon("Mailings","Greeting Line");}],
     ["Gridlines (View)", function(){ribbon("View","Gridlines");}],
-    ["Grow Font", function(){shortcut("Ctrl+Shift+>");}],
     ["Group Objects", function(){ribbon("Shape Format","Group > Group");}],
+    ["Grow Font", function(){shortcut("Ctrl+Shift+>");}],
     ["Hanging Indent", function(){setIndent("first",-36);}],
     ["Header", function(){ribbon("Insert","Header");}],
-    ["Heading 1 Style", function(){
-      if(isWord()){Word.run(function(c){c.document.getSelection().style="Heading 1";return c.sync();}).then(function(){showToast("Heading 1 applied.");}).catch(function(e){showToast("Error: "+e.message);});}
-      else{shortcut("Ctrl+Alt+1");}
-    }],
-    ["Heading 2 Style", function(){
-      if(isWord()){Word.run(function(c){c.document.getSelection().style="Heading 2";return c.sync();}).then(function(){showToast("Heading 2 applied.");}).catch(function(e){showToast("Error: "+e.message);});}
-      else{shortcut("Ctrl+Alt+2");}
-    }],
-    ["Heading 3 Style", function(){
-      if(isWord()){Word.run(function(c){c.document.getSelection().style="Heading 3";return c.sync();}).then(function(){showToast("Heading 3 applied.");}).catch(function(e){showToast("Error: "+e.message);});}
-      else{shortcut("Ctrl+Alt+3");}
-    }],
-    ["Heading 4 Style", function(){
-      if(isWord()){Word.run(function(c){c.document.getSelection().style="Heading 4";return c.sync();}).then(function(){showToast("Heading 4 applied.");}).catch(function(e){showToast("Error: "+e.message);});}
-      else{ribbon("Home","Styles > Heading 4");}
-    }],
-    ["Heading 5 Style", function(){
-      if(isWord()){Word.run(function(c){c.document.getSelection().style="Heading 5";return c.sync();}).then(function(){showToast("Heading 5 applied.");}).catch(function(e){showToast("Error: "+e.message);});}
-      else{ribbon("Home","Styles > Heading 5");}
-    }],
     ["Heading Rows Repeat", function(){ribbon("Table Layout","Repeat Header Rows");}],
     ["Help", function(){shortcut("F1");}],
     ["Hidden Text", function(){ribbon("Home","Font dialog > Effects > Hidden");}],
-    ["Highlight: Yellow", function(){setHighlight("#FFFF00");}],
+    ["Highlight: Blue", function(){setHighlight("#0000FF");}],
     ["Highlight: Bright Green", function(){setHighlight("#00FF00");}],
     ["Highlight: Cyan", function(){setHighlight("#00FFFF");}],
-    ["Highlight: Pink", function(){setHighlight("#FF00FF");}],
-    ["Highlight: Red", function(){setHighlight("#FF0000");}],
-    ["Highlight: Blue", function(){setHighlight("#0000FF");}],
     ["Highlight: Dark Blue", function(){setHighlight("#000080");}],
-    ["Highlight: Teal", function(){setHighlight("#008080");}],
-    ["Highlight: Green", function(){setHighlight("#008000");}],
     ["Highlight: Dark Red", function(){setHighlight("#800000");}],
     ["Highlight: Dark Yellow", function(){setHighlight("#808000");}],
-    ["Highlight: Gray 50%", function(){setHighlight("#808080");}],
     ["Highlight: Gray 25%", function(){setHighlight("#C0C0C0");}],
+    ["Highlight: Gray 50%", function(){setHighlight("#808080");}],
+    ["Highlight: Green", function(){setHighlight("#008000");}],
+    ["Highlight: Pink", function(){setHighlight("#FF00FF");}],
+    ["Highlight: Red", function(){setHighlight("#FF0000");}],
     ["Highlight: Remove", function(){setHighlight(null);}],
+    ["Highlight: Teal", function(){setHighlight("#008080");}],
+    ["Highlight: Yellow", function(){setHighlight("#FFFF00");}],
+    ["Highlighter Pen", function(){ribbon("Draw","Pens > Highlighter");}],
     ["Horizontal Line", function(){wordInsertHtml('<hr style="border:1px solid #999;width:100%">',"Horizontal line inserted.");}],
     ["Hyperlink: Insert", function(){shortcut("Ctrl+K");}],
     ["Hyphenation: Automatic", function(){ribbon("Layout","Hyphenation > Automatic");}],
@@ -504,15 +494,17 @@
     ["Hyphenation: None", function(){ribbon("Layout","Hyphenation > None");}],
     ["Icons", function(){ribbon("Insert","Icons");}],
     ["Immersive Reader", function(){ribbon("View","Immersive Reader");}],
-    ["Increase Font Size", function(){
-      if(isWord()){Word.run(function(c){var s=c.document.getSelection();s.font.load("size");return c.sync().then(function(){s.font.size=s.font.size+1;return c.sync();});}).then(function(){showToast("Font size increased.");}).catch(function(e){showToast("Error: "+e.message);});}
-      else{shortcut("Ctrl+Shift+>");}
-    }],
+    ["Import Subdocument", function(){ribbon("Outlining","Master Document > Insert");}],
     ["Increase Indent", function(){setIndent("left",36);}],
     ["Increase List Level", function(){shortcut("Tab in list");}],
     ["Index: Insert", function(){ribbon("References","Insert Index");}],
     ["Index: Mark Entry", function(){shortcut("Alt+Shift+X");}],
     ["Index: Update", function(){ribbon("References","Update Index");}],
+    ["Ink Annotations: Toggle", function(){ribbon("Review","Ink > Start/Stop Inking");}],
+    ["Ink Replay", function(){ribbon("Draw","Ink Replay");}],
+    ["Ink to Math", function(){ribbon("Draw","Ink to Math");}],
+    ["Ink to Shape", function(){ribbon("Draw","Ink to Shape");}],
+    ["Ink to Text", function(){ribbon("Draw","Ink to Text");}],
     ["Insert Address Block (Mail Merge)", function(){ribbon("Mailings","Address Block");}],
     ["Insert Caption", function(){ribbon("References","Insert Caption");}],
     ["Insert Cells", function(){ribbon("Table Layout","Insert > Insert Cells");}],
@@ -536,11 +528,6 @@
     ["Insert Rows Below", function(){ribbon("Table Layout","Insert Below");}],
     ["Insert Signature Line", function(){ribbon("Insert","Signature Line");}],
     ["Insert Symbol", function(){ribbon("Insert","Symbol > More Symbols");}],
-    ["Insert Table", function(){
-      if(isWord()){Word.run(function(c){c.document.getSelection().insertTable(3,3,"After",[["","",""],["","",""],["","",""]]);return c.sync();}).then(function(){showToast("Table inserted.");}).catch(function(e){showToast("Error: "+e.message);});}
-      else if(isExcel()){Excel.run(function(c){var sh=c.workbook.worksheets.getActiveWorksheet();var r=c.workbook.getSelectedRange();r.load("address");return c.sync().then(function(){sh.tables.add(r.address,true).name="QuickTable_"+Date.now();return c.sync();});}).then(function(){showToast("Table created.");}).catch(function(e){showToast("Error: "+e.message);});}
-      else{showToast("Not available for this app.");}
-    }],
     ["Insert Table of Authorities", function(){ribbon("References","Insert Table of Authorities");}],
     ["Insert Table of Contents", function(){ribbon("References","Table of Contents");}],
     ["Insert Table of Figures", function(){ribbon("References","Insert Table of Figures");}],
@@ -548,6 +535,7 @@
     ["Insert Time", function(){ribbon("Insert","Date & Time (with time format)");}],
     ["Insert WordArt", function(){ribbon("Insert","WordArt");}],
     ["Italic", function(){toggleFont("italic");}],
+    ["Join to Previous List", function(){ribbon("Home","Right-click numbered list > Join to Previous List");}],
     ["Justify", function(){setAlignment("Justified");}],
     ["Keep Lines Together", function(){ribbon("Home","Paragraph dialog > Line and Page Breaks > Keep lines together");}],
     ["Keep with Next", function(){ribbon("Home","Paragraph dialog > Line and Page Breaks > Keep with next");}],
@@ -556,6 +544,7 @@
     ["Language: Set Proofing", function(){ribbon("Review","Language > Set Proofing Language");}],
     ["Language: Translate Document", function(){ribbon("Review","Translate > Translate Document");}],
     ["Language: Translate Selection", function(){ribbon("Review","Translate > Translate Selection");}],
+    ["Lasso Select (Ink)", function(){ribbon("Draw","Lasso Select");}],
     ["Last Column (Table Style)", function(){ribbon("Table Design","Last Column");}],
     ["Left Indent", function(){setIndent("left",36);}],
     ["Left Tab Stop", function(){ribbon("Home","Paragraph dialog > Tabs");}],
@@ -569,36 +558,66 @@
     ["Line Spacing: 2.5", function(){setLineSpacing(30);}],
     ["Line Spacing: 3.0", function(){setLineSpacing(36);}],
     ["Link to Previous (Header/Footer)", function(){ribbon("Header & Footer","Link to Previous");}],
+    ["Lock Subdocument", function(){ribbon("Outlining","Master Document > Lock Document");}],
     ["Lock Tracking", function(){ribbon("Review","Track Changes > Lock Tracking");}],
-    ["Lowercase", function(){
-      if(isWord()){Word.run(function(c){var s=c.document.getSelection();s.load("text");return c.sync().then(function(){s.insertText(s.text.toLowerCase(),"Replace");return c.sync();});}).then(function(){showToast("Lowercase applied.");}).catch(function(e){showToast("Error: "+e.message);});}
-      else{showToast("Not available for this app.");}
-    }],
     ["Macros: Record", function(){ribbon("View","Macros > Record Macro");}],
     ["Macros: View", function(){shortcut("Alt+F8");}],
-    ["Mail Merge: Start", function(){ribbon("Mailings","Start Mail Merge");}],
-    ["Mail Merge: Select Recipients", function(){ribbon("Mailings","Select Recipients");}],
-    ["Mail Merge: Preview Results", function(){ribbon("Mailings","Preview Results");}],
+    ["Mail Merge: Check for Errors", function(){ribbon("Mailings","Finish & Merge > Check for Errors");}],
+    ["Mail Merge: Directory", function(){ribbon("Mailings","Start Mail Merge > Directory");}],
+    ["Mail Merge: Edit Individual Documents", function(){ribbon("Mailings","Finish & Merge > Edit Individual Documents");}],
+    ["Mail Merge: Edit Recipient List", function(){ribbon("Mailings","Edit Recipient List");}],
+    ["Mail Merge: Email Messages", function(){ribbon("Mailings","Start Mail Merge > E-Mail Messages");}],
+    ["Mail Merge: Envelopes", function(){ribbon("Mailings","Start Mail Merge > Envelopes");}],
+    ["Mail Merge: Find Recipient", function(){ribbon("Mailings","Find Recipient");}],
     ["Mail Merge: Finish & Merge", function(){ribbon("Mailings","Finish & Merge");}],
+    ["Mail Merge: First Record", function(){ribbon("Mailings","Preview Results > First Record");}],
+    ["Mail Merge: Go to Record", function(){ribbon("Mailings","Preview Results > Go to Record");}],
+    ["Mail Merge: Highlight Merge Fields", function(){ribbon("Mailings","Highlight Merge Fields");}],
+    ["Mail Merge: Labels", function(){ribbon("Mailings","Start Mail Merge > Labels");}],
+    ["Mail Merge: Last Record", function(){ribbon("Mailings","Preview Results > Last Record");}],
+    ["Mail Merge: Letters", function(){ribbon("Mailings","Start Mail Merge > Letters");}],
+    ["Mail Merge: Match Fields", function(){ribbon("Mailings","Match Fields");}],
+    ["Mail Merge: Next Record", function(){ribbon("Mailings","Preview Results > Next Record");}],
+    ["Mail Merge: Normal Word Document", function(){ribbon("Mailings","Start Mail Merge > Normal Word Document");}],
+    ["Mail Merge: Preview Results", function(){ribbon("Mailings","Preview Results");}],
+    ["Mail Merge: Previous Record", function(){ribbon("Mailings","Preview Results > Previous Record");}],
+    ["Mail Merge: Print Documents", function(){ribbon("Mailings","Finish & Merge > Print Documents");}],
+    ["Mail Merge: Rules: Ask", function(){ribbon("Mailings","Rules > Ask");}],
+    ["Mail Merge: Rules: Fill-in", function(){ribbon("Mailings","Rules > Fill-in");}],
+    ["Mail Merge: Rules: If Then Else", function(){ribbon("Mailings","Rules > If...Then...Else");}],
+    ["Mail Merge: Rules: Merge Record", function(){ribbon("Mailings","Rules > Merge Record #");}],
+    ["Mail Merge: Rules: Merge Sequence", function(){ribbon("Mailings","Rules > Merge Sequence #");}],
+    ["Mail Merge: Rules: Next Record", function(){ribbon("Mailings","Rules > Next Record");}],
+    ["Mail Merge: Rules: Next Record If", function(){ribbon("Mailings","Rules > Next Record If");}],
+    ["Mail Merge: Rules: Set Bookmark", function(){ribbon("Mailings","Rules > Set Bookmark");}],
+    ["Mail Merge: Rules: Skip Record If", function(){ribbon("Mailings","Rules > Skip Record If");}],
+    ["Mail Merge: Select Recipients", function(){ribbon("Mailings","Select Recipients");}],
+    ["Mail Merge: Send Email Messages", function(){ribbon("Mailings","Finish & Merge > Send Email Messages");}],
+    ["Mail Merge: Start", function(){ribbon("Mailings","Start Mail Merge");}],
+    ["Mail Merge: Step-by-Step Wizard", function(){ribbon("Mailings","Start Mail Merge > Step-by-Step Wizard");}],
     ["Manage Add-ins", function(){ribbon("Insert","My Add-ins > Manage My Add-ins");}],
     ["Manage Sources", function(){ribbon("References","Manage Sources");}],
     ["Manage Styles", function(){ribbon("Home","Styles launcher > Manage Styles");}],
     ["Manual Hyphenation", function(){ribbon("Layout","Hyphenation > Manual");}],
-    ["Margins: Normal", function(){ribbon("Layout","Margins > Normal");}],
-    ["Margins: Narrow", function(){ribbon("Layout","Margins > Narrow");}],
-    ["Margins: Moderate", function(){ribbon("Layout","Margins > Moderate");}],
-    ["Margins: Wide", function(){ribbon("Layout","Margins > Wide");}],
     ["Margins: Mirrored", function(){ribbon("Layout","Margins > Mirrored");}],
+    ["Margins: Moderate", function(){ribbon("Layout","Margins > Moderate");}],
+    ["Margins: Narrow", function(){ribbon("Layout","Margins > Narrow");}],
+    ["Margins: Normal", function(){ribbon("Layout","Margins > Normal");}],
+    ["Margins: Wide", function(){ribbon("Layout","Margins > Wide");}],
     ["Mark Citation", function(){ribbon("References","Mark Citation");}],
     ["Mark Index Entry", function(){shortcut("Alt+Shift+X");}],
     ["Mark Table of Contents Entry", function(){ribbon("References","Add Text");}],
     ["Merge Cells", function(){ribbon("Table Layout","Merge Cells");}],
     ["Merge Formatting (Paste)", function(){shortcut("Ctrl+Shift+V (then choose)");}],
+    ["Merge Subdocuments", function(){ribbon("Outlining","Master Document > Merge");}],
     ["Modify Style", function(){ribbon("Home","Styles > right-click style > Modify");}],
     ["Move Down (Outline)", function(){ribbon("Outlining","Move Down");}],
     ["Move Up (Outline)", function(){ribbon("Outlining","Move Up");}],
     ["Multilevel List", function(){ribbon("Home","Multilevel List");}],
     ["Navigation Pane", function(){shortcut("Ctrl+F (opens Navigation)");}],
+    ["Navigation Pane: Headings Tab", function(){ribbon("View","Navigation Pane > Headings tab");}],
+    ["Navigation Pane: Pages Tab", function(){ribbon("View","Navigation Pane > Pages tab");}],
+    ["Navigation Pane: Results Tab", function(){ribbon("View","Navigation Pane > Results tab");}],
     ["New Blank Document", function(){shortcut("Ctrl+N");}],
     ["New Comment", function(){shortcut("Ctrl+Alt+M");}],
     ["New Folder", function(){ribbon("File","Save As > New Folder");}],
@@ -608,37 +627,41 @@
     ["Next Comment", function(){ribbon("Review","Next Comment");}],
     ["Next Footnote", function(){ribbon("References","Next Footnote");}],
     ["Next Page Section Break", function(){wordInsertBreak("SectionNext");}],
-    ["No Spacing Style", function(){
-      if(isWord()){Word.run(function(c){c.document.getSelection().style="No Spacing";return c.sync();}).then(function(){showToast("No Spacing applied.");}).catch(function(e){showToast("Error: "+e.message);});}
-      else{ribbon("Home","Styles > No Spacing");}
-    }],
-    ["Normal Style", function(){
-      if(isWord()){Word.run(function(c){c.document.getSelection().style="Normal";return c.sync();}).then(function(){showToast("Normal style applied.");}).catch(function(e){showToast("Error: "+e.message);});}
-      else{shortcut("Ctrl+Shift+N");}
-    }],
     ["Numbering", function(){ribbon("Home","Numbering");}],
     ["Object: Insert", function(){ribbon("Insert","Object");}],
     ["Odd Page Section Break", function(){wordInsertBreak("OddPage");}],
     ["Open", function(){shortcut("Ctrl+O");}],
     ["Open Hyperlink", function(){shortcut("Ctrl+Click on hyperlink");}],
     ["Open in Browser", function(){ribbon("File","Info > Open in Browser");}],
-    ["Orientation: Portrait", function(){ribbon("Layout","Orientation > Portrait");}],
     ["Orientation: Landscape", function(){ribbon("Layout","Orientation > Landscape");}],
+    ["Orientation: Portrait", function(){ribbon("Layout","Orientation > Portrait");}],
     ["Outline View", function(){ribbon("View","Outline");}],
+    ["Outline: Show All Levels", function(){ribbon("Outlining","Show Level > All Levels");}],
+    ["Outline: Show First Line Only", function(){ribbon("Outlining","Show First Line Only checkbox");}],
+    ["Outline: Show Level 1", function(){ribbon("Outlining","Show Level > Level 1");}],
+    ["Outline: Show Level 2", function(){ribbon("Outlining","Show Level > Level 2");}],
+    ["Outline: Show Level 3", function(){ribbon("Outlining","Show Level > Level 3");}],
+    ["Outline: Show Level 4", function(){ribbon("Outlining","Show Level > Level 4");}],
+    ["Outline: Show Level 5", function(){ribbon("Outlining","Show Level > Level 5");}],
+    ["Outline: Show Level 6", function(){ribbon("Outlining","Show Level > Level 6");}],
+    ["Outline: Show Level 7", function(){ribbon("Outlining","Show Level > Level 7");}],
+    ["Outline: Show Level 8", function(){ribbon("Outlining","Show Level > Level 8");}],
+    ["Outline: Show Level 9", function(){ribbon("Outlining","Show Level > Level 9");}],
+    ["Outline: Show Text Formatting", function(){ribbon("Outlining","Show Text Formatting checkbox");}],
     ["Page Background: Color", function(){ribbon("Design","Page Color");}],
-    ["Page Background: Watermark", function(){ribbon("Design","Watermark");}],
     ["Page Background: Page Borders", function(){ribbon("Design","Page Borders");}],
+    ["Page Background: Watermark", function(){ribbon("Design","Watermark");}],
     ["Page Break", function(){wordInsertBreak("Page");}],
     ["Page Break Before", function(){ribbon("Home","Paragraph dialog > Line and Page Breaks > Page break before");}],
     ["Page Color", function(){ribbon("Design","Page Color");}],
     ["Page Down", function(){shortcut("Page Down key");}],
     ["Page Layout View", function(){ribbon("View","Print Layout");}],
-    ["Page Number: Top of Page", function(){ribbon("Insert","Page Number > Top of Page");}],
     ["Page Number: Bottom of Page", function(){ribbon("Insert","Page Number > Bottom of Page");}],
-    ["Page Number: Page Margins", function(){ribbon("Insert","Page Number > Page Margins");}],
     ["Page Number: Current Position", function(){ribbon("Insert","Page Number > Current Position");}],
     ["Page Number: Format", function(){ribbon("Insert","Page Number > Format Page Numbers");}],
+    ["Page Number: Page Margins", function(){ribbon("Insert","Page Number > Page Margins");}],
     ["Page Number: Remove", function(){ribbon("Insert","Page Number > Remove Page Numbers");}],
+    ["Page Number: Top of Page", function(){ribbon("Insert","Page Number > Top of Page");}],
     ["Page Setup Dialog", function(){ribbon("Layout","Page Setup launcher (bottom-right arrow)");}],
     ["Page Up", function(){shortcut("Page Up key");}],
     ["Paragraph Dialog", function(){ribbon("Home","Paragraph launcher (bottom-right arrow)");}],
@@ -647,17 +670,18 @@
     ["Paste", function(){shortcut("Ctrl+V");}],
     ["Paste as Hyperlink", function(){ribbon("Home","Paste > Paste Special > Paste as Hyperlink");}],
     ["Paste as Picture", function(){ribbon("Home","Paste > Paste Special > Picture");}],
+    ["Paste Special", function(){shortcut("Ctrl+Alt+V");}],
     ["Paste: Keep Source Formatting", function(){shortcut("Ctrl+V then Ctrl > K");}],
     ["Paste: Keep Text Only", function(){shortcut("Ctrl+V then Ctrl > T");}],
     ["Paste: Merge Formatting", function(){shortcut("Ctrl+V then Ctrl > M");}],
-    ["Paste Special", function(){shortcut("Ctrl+Alt+V");}],
-    ["Picture: Insert", function(){ribbon("Insert","Pictures");}],
+    ["Phonetic Guide", function(){ribbon("Home","Phonetic Guide (Asian Layout)");}],
     ["Picture: Border", function(){ribbon("Picture Format","Picture Border");}],
-    ["Picture: Effects", function(){ribbon("Picture Format","Picture Effects");}],
-    ["Picture: Layout", function(){ribbon("Picture Format","Picture Layout");}],
     ["Picture: Compress", function(){ribbon("Picture Format","Compress Pictures");}],
-    ["Picture: Reset", function(){ribbon("Picture Format","Reset Picture");}],
     ["Picture: Crop", function(){ribbon("Picture Format","Crop");}],
+    ["Picture: Effects", function(){ribbon("Picture Format","Picture Effects");}],
+    ["Picture: Insert", function(){ribbon("Insert","Pictures");}],
+    ["Picture: Layout", function(){ribbon("Picture Format","Picture Layout");}],
+    ["Picture: Reset", function(){ribbon("Picture Format","Reset Picture");}],
     ["Portrait Orientation", function(){ribbon("Layout","Orientation > Portrait");}],
     ["Position Object", function(){ribbon("Shape Format","Position");}],
     ["Present Online", function(){ribbon("File","Share > Present Online");}],
@@ -667,11 +691,13 @@
     ["Print Layout View", function(){ribbon("View","Print Layout");}],
     ["Print Preview", function(){shortcut("Ctrl+F2");}],
     ["Promote (Outline)", function(){ribbon("Outlining","Promote");}],
+    ["Promote to Heading 1", function(){ribbon("Outlining","Promote to Heading 1");}],
     ["Protect Document", function(){ribbon("File","Info > Protect Document");}],
     ["Quick Parts", function(){ribbon("Insert","Quick Parts");}],
     ["Quick Print", function(){shortcut("Ctrl+P then Enter");}],
     ["Quick Styles", function(){ribbon("Home","Styles gallery");}],
     ["Quick Tables", function(){ribbon("Insert","Table > Quick Tables");}],
+    ["Read Aloud", function(){ribbon("Review","Read Aloud");}],
     ["Read Mode", function(){ribbon("View","Read Mode");}],
     ["Redo", function(){shortcut("Ctrl+Y");}],
     ["References: Bibliography", function(){ribbon("References","Bibliography");}],
@@ -679,10 +705,7 @@
     ["References: Style (APA, MLA, etc.)", function(){ribbon("References","Style dropdown");}],
     ["Reject All Changes in Document", function(){ribbon("Review","Reject > Reject All Changes");}],
     ["Reject and Move to Next", function(){ribbon("Review","Reject");}],
-    ["Remove All Formatting", function(){
-      if(isWord()){Word.run(function(c){c.document.getSelection().font.set({bold:false,italic:false,underline:"None",strikethrough:false,superscript:false,subscript:false,color:"#000000",highlightColor:null});return c.sync();}).then(function(){showToast("Formatting removed.");}).catch(function(e){showToast("Error: "+e.message);});}
-      else{shortcut("Ctrl+Space");}
-    }],
+    ["Remove Content Control", function(){ribbon("Developer","Right-click control > Remove Content Control");}],
     ["Remove Hyperlink", function(){ribbon("Right-click hyperlink > Remove Hyperlink");}],
     ["Remove Page Break", function(){showToast("Show formatting marks (Ctrl+Shift+8), select break, press Delete.");}],
     ["Remove Space After Paragraph", function(){setSpaceAfter(0);}],
@@ -698,33 +721,27 @@
     ["Reset Picture", function(){ribbon("Picture Format","Reset Picture");}],
     ["Restart Numbering", function(){ribbon("Home","right-click number > Restart at 1");}],
     ["Restrict Editing", function(){ribbon("Review","Restrict Editing");}],
+    ["Review in Editor", function(){ribbon("Home","Editor > Review in Editor pane");}],
     ["Reviewing Pane: Horizontal", function(){ribbon("Review","Reviewing Pane > Horizontal");}],
     ["Reviewing Pane: Vertical", function(){ribbon("Review","Reviewing Pane > Vertical");}],
     ["Right Indent", function(){setIndent("right",36);}],
     ["Right Tab Stop", function(){ribbon("Home","Paragraph dialog > Tabs");}],
     ["Rotate Left 90", function(){ribbon("Shape Format","Rotate > Rotate Left 90");}],
     ["Rotate Right 90", function(){ribbon("Shape Format","Rotate > Rotate Right 90");}],
+    ["Ruler (Draw)", function(){ribbon("Draw","Ruler");}],
     ["Ruler (Show/Hide)", function(){ribbon("View","Ruler");}],
-    ["Save", function(){
-      Office.context.document.save(Office.AsyncResultStatus||{},function(r){
-        if(r.status===Office.AsyncResultStatus.Failed){showToast("Save failed: "+r.error.message);}else{showToast("Saved!");}
-      });
-    }],
     ["Save All", function(){shortcut("Not available via API. Save each document individually.");}],
     ["Save As", function(){shortcut("F12 or Ctrl+Shift+S");}],
     ["Save As PDF", function(){ribbon("File","Export > Create PDF/XPS");}],
+    ["Save as Picture", function(){ribbon("Right-click object","Save as Picture");}],
     ["Save As Template", function(){ribbon("File","Save As > Word Template (*.dotx)");}],
-    ["Screenshot", function(){ribbon("Insert","Screenshot");}],
     ["Screen Clipping", function(){ribbon("Insert","Screenshot > Screen Clipping");}],
+    ["Screenshot", function(){ribbon("Insert","Screenshot");}],
     ["Search Document", function(){shortcut("Ctrl+F");}],
     ["Section Break: Continuous", function(){wordInsertBreak("SectionContinuous");}],
     ["Section Break: Even Page", function(){wordInsertBreak("EvenPage");}],
     ["Section Break: Next Page", function(){wordInsertBreak("SectionNext");}],
     ["Section Break: Odd Page", function(){wordInsertBreak("OddPage");}],
-    ["Select All", function(){
-      if(isWord()){Word.run(function(c){c.document.body.getRange().select();return c.sync();}).then(function(){showToast("All selected.");}).catch(function(e){showToast("Error: "+e.message);});}
-      else{shortcut("Ctrl+A");}
-    }],
     ["Select Cell", function(){ribbon("Table Layout","Select > Select Cell");}],
     ["Select Column", function(){ribbon("Table Layout","Select > Select Column");}],
     ["Select Objects", function(){ribbon("Home","Select > Select Objects");}],
@@ -736,6 +753,8 @@
     ["Send Backward", function(){ribbon("Shape Format","Send Backward");}],
     ["Send Behind Text", function(){ribbon("Shape Format","Send Backward > Send Behind Text");}],
     ["Send to Back", function(){ribbon("Shape Format","Send to Back");}],
+    ["Separate List", function(){ribbon("Home","Right-click numbered list > Separate List");}],
+    ["Set Numbering Value", function(){ribbon("Home","Right-click numbered list > Set Numbering Value");}],
     ["Shading", function(){ribbon("Home","Shading (paint bucket icon)");}],
     ["Shape Effects", function(){ribbon("Shape Format","Shape Effects");}],
     ["Shape Fill", function(){ribbon("Shape Format","Shape Fill");}],
@@ -745,16 +764,20 @@
     ["Show All Formatting Marks", function(){shortcut("Ctrl+Shift+8 or Ctrl+*");}],
     ["Show Comments", function(){ribbon("Review","Show Comments");}],
     ["Show Markup", function(){ribbon("Review","Show Markup");}],
+    ["Show Subdocuments", function(){ribbon("Outlining","Master Document > Show Subdocuments");}],
     ["Show/Hide Paragraph Marks", function(){shortcut("Ctrl+Shift+8");}],
     ["Shrink Font", function(){shortcut("Ctrl+Shift+<");}],
     ["Shrink One Page", function(){ribbon("Print Preview","Shrink One Page");}],
+    ["Sign Document (Digital Signature)", function(){ribbon("File","Info > Protect Document > Add a Digital Signature");}],
+    ["Signature Details", function(){ribbon("Right-click signature","Signature Details");}],
+    ["Signature: Remove", function(){ribbon("Right-click signature","Remove Signature");}],
     ["Simple Markup", function(){ribbon("Review","Display for Review > Simple Markup");}],
-    ["Size: Letter (8.5x11)", function(){ribbon("Layout","Size > Letter");}],
-    ["Size: Legal (8.5x14)", function(){ribbon("Layout","Size > Legal");}],
     ["Size: A4", function(){ribbon("Layout","Size > A4");}],
     ["Size: A5", function(){ribbon("Layout","Size > A5");}],
     ["Size: B5", function(){ribbon("Layout","Size > B5");}],
     ["Size: Executive", function(){ribbon("Layout","Size > Executive");}],
+    ["Size: Legal (8.5x14)", function(){ribbon("Layout","Size > Legal");}],
+    ["Size: Letter (8.5x11)", function(){ribbon("Layout","Size > Letter");}],
     ["Small Caps", function(){shortcut("Ctrl+Shift+K");}],
     ["SmartArt", function(){ribbon("Insert","SmartArt");}],
     ["Snap to Grid", function(){ribbon("Shape Format","Align > Grid Settings > Snap to Grid");}],
@@ -762,100 +785,28 @@
     ["Sort Ascending", function(){ribbon("Home","Sort > Ascending");}],
     ["Sort Descending", function(){ribbon("Home","Sort > Descending");}],
     ["Space After: 0 pt", function(){setSpaceAfter(0);}],
-    ["Space After: 6 pt", function(){setSpaceAfter(6);}],
-    ["Space After: 8 pt", function(){setSpaceAfter(8);}],
     ["Space After: 10 pt", function(){setSpaceAfter(10);}],
     ["Space After: 12 pt", function(){setSpaceAfter(12);}],
     ["Space After: 24 pt", function(){setSpaceAfter(24);}],
+    ["Space After: 6 pt", function(){setSpaceAfter(6);}],
+    ["Space After: 8 pt", function(){setSpaceAfter(8);}],
     ["Space Before: 0 pt", function(){setSpaceBefore(0);}],
-    ["Space Before: 6 pt", function(){setSpaceBefore(6);}],
-    ["Space Before: 8 pt", function(){setSpaceBefore(8);}],
     ["Space Before: 10 pt", function(){setSpaceBefore(10);}],
     ["Space Before: 12 pt", function(){setSpaceBefore(12);}],
     ["Space Before: 24 pt", function(){setSpaceBefore(24);}],
+    ["Space Before: 6 pt", function(){setSpaceBefore(6);}],
+    ["Space Before: 8 pt", function(){setSpaceBefore(8);}],
+    ["Spacing: 1.5", function(){setLineSpacing(18);}],
+    ["Spacing: Double", function(){setLineSpacing(24);}],
+    ["Spacing: Single", function(){setLineSpacing(12);}],
     ["Spelling and Grammar", function(){shortcut("F7");}],
     ["Split Cells", function(){ribbon("Table Layout","Split Cells");}],
+    ["Split Subdocument", function(){ribbon("Outlining","Master Document > Split");}],
     ["Split Table", function(){ribbon("Table Layout","Split Table");}],
     ["Split Window", function(){ribbon("View","Split");}],
     ["Start Mail Merge", function(){ribbon("Mailings","Start Mail Merge");}],
     ["Start Tracking Changes", function(){shortcut("Ctrl+Shift+E");}],
     ["Strikethrough", function(){toggleFont("strikethrough");}],
-    ["Style: Heading 1", function(){
-      if(isWord()){Word.run(function(c){c.document.getSelection().style="Heading 1";return c.sync();}).then(function(){showToast("Heading 1 applied.");}).catch(function(e){showToast("Error: "+e.message);});}
-      else{shortcut("Ctrl+Alt+1");}
-    }],
-    ["Style: Heading 2", function(){
-      if(isWord()){Word.run(function(c){c.document.getSelection().style="Heading 2";return c.sync();}).then(function(){showToast("Heading 2 applied.");}).catch(function(e){showToast("Error: "+e.message);});}
-      else{shortcut("Ctrl+Alt+2");}
-    }],
-    ["Style: Heading 3", function(){
-      if(isWord()){Word.run(function(c){c.document.getSelection().style="Heading 3";return c.sync();}).then(function(){showToast("Heading 3 applied.");}).catch(function(e){showToast("Error: "+e.message);});}
-      else{shortcut("Ctrl+Alt+3");}
-    }],
-    ["Style: Normal", function(){
-      if(isWord()){Word.run(function(c){c.document.getSelection().style="Normal";return c.sync();}).then(function(){showToast("Normal style applied.");}).catch(function(e){showToast("Error: "+e.message);});}
-      else{shortcut("Ctrl+Shift+N");}
-    }],
-    ["Style: No Spacing", function(){
-      if(isWord()){Word.run(function(c){c.document.getSelection().style="No Spacing";return c.sync();}).then(function(){showToast("No Spacing applied.");}).catch(function(e){showToast("Error: "+e.message);});}
-      else{ribbon("Home","Styles > No Spacing");}
-    }],
-    ["Style: Title", function(){
-      if(isWord()){Word.run(function(c){c.document.getSelection().style="Title";return c.sync();}).then(function(){showToast("Title style applied.");}).catch(function(e){showToast("Error: "+e.message);});}
-      else{ribbon("Home","Styles > Title");}
-    }],
-    ["Style: Subtitle", function(){
-      if(isWord()){Word.run(function(c){c.document.getSelection().style="Subtitle";return c.sync();}).then(function(){showToast("Subtitle style applied.");}).catch(function(e){showToast("Error: "+e.message);});}
-      else{ribbon("Home","Styles > Subtitle");}
-    }],
-    ["Style: Emphasis", function(){
-      if(isWord()){Word.run(function(c){c.document.getSelection().style="Emphasis";return c.sync();}).then(function(){showToast("Emphasis applied.");}).catch(function(e){showToast("Error: "+e.message);});}
-      else{ribbon("Home","Styles > Emphasis");}
-    }],
-    ["Style: Strong", function(){
-      if(isWord()){Word.run(function(c){c.document.getSelection().style="Strong";return c.sync();}).then(function(){showToast("Strong applied.");}).catch(function(e){showToast("Error: "+e.message);});}
-      else{ribbon("Home","Styles > Strong");}
-    }],
-    ["Style: Quote", function(){
-      if(isWord()){Word.run(function(c){c.document.getSelection().style="Quote";return c.sync();}).then(function(){showToast("Quote style applied.");}).catch(function(e){showToast("Error: "+e.message);});}
-      else{ribbon("Home","Styles > Quote");}
-    }],
-    ["Style: Intense Quote", function(){
-      if(isWord()){Word.run(function(c){c.document.getSelection().style="Intense Quote";return c.sync();}).then(function(){showToast("Intense Quote applied.");}).catch(function(e){showToast("Error: "+e.message);});}
-      else{ribbon("Home","Styles > Intense Quote");}
-    }],
-    ["Style: List Paragraph", function(){
-      if(isWord()){Word.run(function(c){c.document.getSelection().style="List Paragraph";return c.sync();}).then(function(){showToast("List Paragraph applied.");}).catch(function(e){showToast("Error: "+e.message);});}
-      else{ribbon("Home","Styles > List Paragraph");}
-    }],
-    ["Style: Subtle Emphasis", function(){
-      if(isWord()){Word.run(function(c){c.document.getSelection().style="Subtle Emphasis";return c.sync();}).then(function(){showToast("Subtle Emphasis applied.");}).catch(function(e){showToast("Error: "+e.message);});}
-      else{ribbon("Home","Styles > Subtle Emphasis");}
-    }],
-    ["Style: Intense Emphasis", function(){
-      if(isWord()){Word.run(function(c){c.document.getSelection().style="Intense Emphasis";return c.sync();}).then(function(){showToast("Intense Emphasis applied.");}).catch(function(e){showToast("Error: "+e.message);});}
-      else{ribbon("Home","Styles > Intense Emphasis");}
-    }],
-    ["Style: Subtle Reference", function(){
-      if(isWord()){Word.run(function(c){c.document.getSelection().style="Subtle Reference";return c.sync();}).then(function(){showToast("Subtle Reference applied.");}).catch(function(e){showToast("Error: "+e.message);});}
-      else{ribbon("Home","Styles > Subtle Reference");}
-    }],
-    ["Style: Intense Reference", function(){
-      if(isWord()){Word.run(function(c){c.document.getSelection().style="Intense Reference";return c.sync();}).then(function(){showToast("Intense Reference applied.");}).catch(function(e){showToast("Error: "+e.message);});}
-      else{ribbon("Home","Styles > Intense Reference");}
-    }],
-    ["Style: Book Title", function(){
-      if(isWord()){Word.run(function(c){c.document.getSelection().style="Book Title";return c.sync();}).then(function(){showToast("Book Title applied.");}).catch(function(e){showToast("Error: "+e.message);});}
-      else{ribbon("Home","Styles > Book Title");}
-    }],
-    ["Subscript", function(){
-      if(isWord()){Word.run(function(c){var s=c.document.getSelection();s.font.load("subscript");return c.sync().then(function(){s.font.subscript=!s.font.subscript;return c.sync();});}).then(function(){showToast("Subscript toggled.");}).catch(function(e){showToast("Error: "+e.message);});}
-      else{shortcut("Ctrl+=");}
-    }],
-    ["Superscript", function(){
-      if(isWord()){Word.run(function(c){var s=c.document.getSelection();s.font.load("superscript");return c.sync().then(function(){s.font.superscript=!s.font.superscript;return c.sync();});}).then(function(){showToast("Superscript toggled.");}).catch(function(e){showToast("Error: "+e.message);});}
-      else{shortcut("Ctrl+Shift++");}
-    }],
     ["Switch Windows", function(){ribbon("View","Switch Windows");}],
     ["Symbol: Insert", function(){ribbon("Insert","Symbol > More Symbols");}],
     ["Synonyms / Thesaurus", function(){shortcut("Shift+F7");}],
@@ -870,8 +821,8 @@
     ["Table of Authorities: Insert", function(){ribbon("References","Insert Table of Authorities");}],
     ["Table of Authorities: Mark Citation", function(){ribbon("References","Mark Citation");}],
     ["Table of Contents: Insert", function(){ribbon("References","Table of Contents");}],
-    ["Table of Contents: Update", function(){ribbon("References","Update Table");}],
     ["Table of Contents: Remove", function(){ribbon("References","Table of Contents > Remove");}],
+    ["Table of Contents: Update", function(){ribbon("References","Update Table");}],
     ["Table of Figures: Insert", function(){ribbon("References","Insert Table of Figures");}],
     ["Table of Figures: Update", function(){ribbon("References","Update Table");}],
     ["Table Properties", function(){ribbon("Table Layout","Properties");}],
@@ -883,62 +834,32 @@
     ["Text Direction", function(){ribbon("Table Layout","Text Direction");}],
     ["Text Effects", function(){ribbon("Home","Text Effects and Typography");}],
     ["Text Highlight Color", function(){ribbon("Home","Text Highlight Color");}],
-    ["Text Wrapping: In Line with Text", function(){ribbon("Shape Format/Picture Format","Wrap Text > In Line with Text");}],
-    ["Text Wrapping: Square", function(){ribbon("Shape Format/Picture Format","Wrap Text > Square");}],
-    ["Text Wrapping: Tight", function(){ribbon("Shape Format/Picture Format","Wrap Text > Tight");}],
-    ["Text Wrapping: Through", function(){ribbon("Shape Format/Picture Format","Wrap Text > Through");}],
-    ["Text Wrapping: Top and Bottom", function(){ribbon("Shape Format/Picture Format","Wrap Text > Top and Bottom");}],
+    ["Text Predictions: Accept", function(){shortcut("Tab (when prediction is shown)");}],
+    ["Text Predictions: Toggle", function(){ribbon("File","Options > Advanced > Editor > Text Predictions");}],
     ["Text Wrapping: Behind Text", function(){ribbon("Shape Format/Picture Format","Wrap Text > Behind Text");}],
     ["Text Wrapping: In Front of Text", function(){ribbon("Shape Format/Picture Format","Wrap Text > In Front of Text");}],
+    ["Text Wrapping: In Line with Text", function(){ribbon("Shape Format/Picture Format","Wrap Text > In Line with Text");}],
+    ["Text Wrapping: Square", function(){ribbon("Shape Format/Picture Format","Wrap Text > Square");}],
+    ["Text Wrapping: Through", function(){ribbon("Shape Format/Picture Format","Wrap Text > Through");}],
+    ["Text Wrapping: Tight", function(){ribbon("Shape Format/Picture Format","Wrap Text > Tight");}],
+    ["Text Wrapping: Top and Bottom", function(){ribbon("Shape Format/Picture Format","Wrap Text > Top and Bottom");}],
     ["Theme Colors", function(){ribbon("Design","Colors");}],
     ["Theme Effects", function(){ribbon("Design","Effects");}],
     ["Theme Fonts", function(){ribbon("Design","Fonts");}],
     ["Themes", function(){ribbon("Design","Themes");}],
     ["Thesaurus", function(){shortcut("Shift+F7");}],
-    ["Title Style", function(){
-      if(isWord()){Word.run(function(c){c.document.getSelection().style="Title";return c.sync();}).then(function(){showToast("Title style applied.");}).catch(function(e){showToast("Error: "+e.message);});}
-      else{ribbon("Home","Styles > Title");}
-    }],
     ["Toggle Field Codes", function(){shortcut("Alt+F9");}],
     ["Toggle Full Screen", function(){shortcut("Alt+V, U (or View > Full Screen)");}],
     ["Track Changes", function(){shortcut("Ctrl+Shift+E");}],
     ["Track Changes Options", function(){ribbon("Review","Track Changes > Change Tracking Options");}],
     ["Translate Document", function(){ribbon("Review","Translate > Translate Document");}],
     ["Translate Selection", function(){ribbon("Review","Translate > Translate Selection");}],
-    ["Underline", function(){
-      if(isWord()){Word.run(function(c){var s=c.document.getSelection();s.font.load("underline");return c.sync().then(function(){s.font.underline=s.font.underline==="None"?"Single":"None";return c.sync();});}).then(function(){showToast("Underline toggled.");}).catch(function(e){showToast("Error: "+e.message);});}
-      else{toggleFont("underline");}
-    }],
-    ["Underline: Double", function(){
-      if(isWord()){Word.run(function(c){c.document.getSelection().font.underline="Double";return c.sync();}).then(function(){showToast("Double underline applied.");}).catch(function(e){showToast("Error: "+e.message);});}
-      else{shortcut("Ctrl+Shift+D");}
-    }],
-    ["Underline: Dotted", function(){
-      if(isWord()){Word.run(function(c){c.document.getSelection().font.underline="Dotted";return c.sync();}).then(function(){showToast("Dotted underline applied.");}).catch(function(e){showToast("Error: "+e.message);});}
-      else{ribbon("Home","Font dialog > Underline style");}
-    }],
-    ["Underline: Dashed", function(){
-      if(isWord()){Word.run(function(c){c.document.getSelection().font.underline="DashLine";return c.sync();}).then(function(){showToast("Dashed underline applied.");}).catch(function(e){showToast("Error: "+e.message);});}
-      else{ribbon("Home","Font dialog > Underline style");}
-    }],
-    ["Underline: Wavy", function(){
-      if(isWord()){Word.run(function(c){c.document.getSelection().font.underline="Wave";return c.sync();}).then(function(){showToast("Wavy underline applied.");}).catch(function(e){showToast("Error: "+e.message);});}
-      else{ribbon("Home","Font dialog > Underline style");}
-    }],
-    ["Underline: Thick", function(){
-      if(isWord()){Word.run(function(c){c.document.getSelection().font.underline="Thick";return c.sync();}).then(function(){showToast("Thick underline applied.");}).catch(function(e){showToast("Error: "+e.message);});}
-      else{ribbon("Home","Font dialog > Underline style");}
-    }],
-    ["Underline: Word Only", function(){
-      if(isWord()){Word.run(function(c){c.document.getSelection().font.underline="Word";return c.sync();}).then(function(){showToast("Word-only underline applied.");}).catch(function(e){showToast("Error: "+e.message);});}
-      else{shortcut("Ctrl+Shift+W");}
-    }],
-    ["Underline: None", function(){
-      if(isWord()){Word.run(function(c){c.document.getSelection().font.underline="None";return c.sync();}).then(function(){showToast("Underline removed.");}).catch(function(e){showToast("Error: "+e.message);});}
-      else{shortcut("Ctrl+U to toggle");}
-    }],
+    ["Translate: Chinese (Simplified to Traditional)", function(){ribbon("Review","Translate > Chinese Simplified to Traditional");}],
+    ["Translate: Chinese (Traditional to Simplified)", function(){ribbon("Review","Translate > Chinese Traditional to Simplified");}],
+    ["Unblock All My Blocked Areas", function(){ribbon("Review","Block Authors > Unblock All");}],
     ["Undo", function(){shortcut("Ctrl+Z");}],
     ["Ungroup Objects", function(){ribbon("Shape Format","Group > Ungroup");}],
+    ["Unlink Subdocument", function(){ribbon("Outlining","Master Document > Unlink");}],
     ["Update All Fields", function(){shortcut("Ctrl+A then F9");}],
     ["Update Bibliography", function(){ribbon("References","Update Citations and Bibliography");}],
     ["Update Field", function(){shortcut("F9 (select field first)");}],
@@ -946,18 +867,14 @@
     ["Update Style to Match Selection", function(){ribbon("Home","right-click style > Update to Match Selection");}],
     ["Update Table of Contents", function(){ribbon("References","Update Table");}],
     ["Update Table of Figures", function(){ribbon("References","Update Table");}],
-    ["UPPERCASE", function(){
-      if(isWord()){Word.run(function(c){var s=c.document.getSelection();s.load("text");return c.sync().then(function(){s.insertText(s.text.toUpperCase(),"Replace");return c.sync();});}).then(function(){showToast("UPPERCASE applied.");}).catch(function(e){showToast("Error: "+e.message);});}
-      else{shortcut("Ctrl+Shift+A (in Word)");}
-    }],
-    ["View Gridlines (Table)", function(){ribbon("Table Layout","View Gridlines");}],
     ["View Footnotes", function(){ribbon("References","Show Notes");}],
+    ["View Gridlines (Table)", function(){ribbon("Table Layout","View Gridlines");}],
     ["View Macros", function(){shortcut("Alt+F8");}],
     ["View Ruler", function(){ribbon("View","Ruler");}],
     ["View Side by Side", function(){ribbon("View","View Side by Side");}],
     ["Visual Basic Editor", function(){shortcut("Alt+F11");}],
-    ["Watermark: Custom", function(){ribbon("Design","Watermark > Custom Watermark");}],
     ["Watermark: Confidential", function(){ribbon("Design","Watermark > Confidential");}],
+    ["Watermark: Custom", function(){ribbon("Design","Watermark > Custom Watermark");}],
     ["Watermark: Do Not Copy", function(){ribbon("Design","Watermark > Do Not Copy");}],
     ["Watermark: Draft", function(){ribbon("Design","Watermark > Draft");}],
     ["Watermark: Remove", function(){ribbon("Design","Watermark > Remove Watermark");}],
@@ -968,19 +885,20 @@
     ["Word Count", function(){ribbon("Review","Word Count");}],
     ["WordArt: Insert", function(){ribbon("Insert","WordArt");}],
     ["Wrap Text", function(){ribbon("Shape Format / Picture Format","Wrap Text");}],
+    ["Writing Pen", function(){ribbon("Draw","Pens > Writing Pen");}],
     ["XML Mapping Pane", function(){ribbon("Developer","XML Mapping Pane");}],
     ["XML Schema", function(){ribbon("Developer","XML Schema");}],
-    ["Zoom: 50%", function(){ribbon("View","Zoom > 50%");}],
-    ["Zoom: 75%", function(){ribbon("View","Zoom > 75%");}],
-    ["Zoom: 100%", function(){ribbon("View","Zoom > 100%");}],
-    ["Zoom: 150%", function(){ribbon("View","Zoom > 150%");}],
-    ["Zoom: 200%", function(){ribbon("View","Zoom > 200%");}],
-    ["Zoom: One Page", function(){ribbon("View","Zoom > One Page");}],
-    ["Zoom: Two Pages", function(){ribbon("View","Zoom > Two Pages");}],
-    ["Zoom: Page Width", function(){ribbon("View","Zoom > Page Width");}],
     ["Zoom Dialog", function(){ribbon("View","Zoom launcher");}],
     ["Zoom In", function(){shortcut("Ctrl+Mouse Scroll Up or Ctrl++");}],
     ["Zoom Out", function(){shortcut("Ctrl+Mouse Scroll Down or Ctrl+-");}],
+    ["Zoom: 100%", function(){ribbon("View","Zoom > 100%");}],
+    ["Zoom: 150%", function(){ribbon("View","Zoom > 150%");}],
+    ["Zoom: 200%", function(){ribbon("View","Zoom > 200%");}],
+    ["Zoom: 50%", function(){ribbon("View","Zoom > 50%");}],
+    ["Zoom: 75%", function(){ribbon("View","Zoom > 75%");}],
+    ["Zoom: One Page", function(){ribbon("View","Zoom > One Page");}],
+    ["Zoom: Page Width", function(){ribbon("View","Zoom > Page Width");}],
+    ["Zoom: Two Pages", function(){ribbon("View","Zoom > Two Pages");}],
   ];
 
   // ── Populate dropdown & wire events ───────────────────────────────
