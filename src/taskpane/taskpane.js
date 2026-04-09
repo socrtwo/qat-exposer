@@ -986,7 +986,6 @@
   // ── Populate dropdown & wire events ───────────────────────────────
   function setup() {
     var select = document.getElementById("command-list");
-    var btn = document.getElementById("run-btn");
 
     // Build options
     select.innerHTML = "";
@@ -997,15 +996,15 @@
       select.appendChild(opt);
     });
 
-    // Run on button click
-    btn.addEventListener("click", function () {
+    // Execute immediately when a command is clicked
+    select.addEventListener("change", function () {
       var idx = select.value;
-      if (idx === "" || idx === undefined) { showToast("Pick a command first."); return; }
+      if (idx === "" || idx === undefined) return;
       ALL_COMMANDS[parseInt(idx, 10)][1]();
     });
 
-    // Also run on double-click
-    select.addEventListener("dblclick", function () {
+    // Allow re-clicking the same command
+    select.addEventListener("click", function () {
       var idx = select.value;
       if (idx === "" || idx === undefined) return;
       ALL_COMMANDS[parseInt(idx, 10)][1]();
