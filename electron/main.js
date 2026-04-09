@@ -2,22 +2,59 @@
 
 const { app, BrowserWindow, shell } = require('electron');
 const path = require('path');
+const { execSync } = require('child_process');
+const http = require('http');
+const fs = require('fs');
 
-// Start the Express server
-const server = require('../src/index');
-
-const PREFERRED_PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
-const MAX_PORT_ATTEMPTS = 10;
+const PORT = 3000;
 let mainWindow;
-let expressServer;
+let serverProcess;
 
-function tryListen(port, attempt) {
+// Serve the built dist/ folder over HTTPS-like local server
+// Office.js requires the page to be served over HTTPS or localhost
+function startStaticServer() {
+  const distDir = path.join(__dirname, '..', 'dist');
+  if (!fs.existsSync(distDir)) {
+    // Build first if dist doesn't exist
+    execSync('npm run build', { cwd: path.join(__dirname, '..'), stdio: 'inherit' });
+  }
+
   return new Promise((resolve, reject) => {
-    const srv = server.listen(port, () => resolve({ srv, port }));
-    srv.on('error', (err) => {
-      if (err.code === 'EADDRINUSE' && attempt < MAX_PORT_ATTEMPTS) {
-        srv.close();
-        resolve(tryListen(port + 1, attempt + 1));
+    const handler = (req, res) => {
+      let urlPath = req.url === '/' ? '/taskpane.html' : req.url;
+      // Strip query strings
+      urlPath = urlPath.split('?')[0];
+      const filePath = path.join(distDir, urlPath);
+      const ext = path.extname(filePath);
+      const mimeTypes = {
+        '.html': 'text/html', '.js': 'application/javascript',
+        '.css': 'text/css', '.png': 'image/png', '.svg': 'image/svg+xml',
+        '.json': 'application/json', '.ico': 'image/x-icon',
+      };
+      fs.readFile(filePath, (err, data) => {
+        if (err) {
+          // Fall back to taskpane.html for SPA routing
+          fs.readFile(path.join(distDir, 'taskpane.html'), (err2, fallback) => {
+            if (err2) { res.writeHead(404); res.end('Not found'); return; }
+            res.writeHead(200, { 'Content-Type': 'text/html' });
+            res.end(fallback);
+          });
+          return;
+        }
+        res.writeHead(200, { 'Content-Type': mimeTypes[ext] || 'application/octet-stream' });
+        res.end(data);
+      });
+    };
+
+    const server = http.createServer(handler);
+    server.listen(PORT, () => {
+      serverProcess = server;
+      resolve(PORT);
+    });
+    server.on('error', (err) => {
+      if (err.code === 'EADDRINUSE') {
+        // Port already in use, just use it
+        resolve(PORT);
       } else {
         reject(err);
       }
@@ -25,33 +62,22 @@ function tryListen(port, attempt) {
   });
 }
 
-function createWindow() {
+function createWindow(port) {
   mainWindow = new BrowserWindow({
-    width: 1000,
-    height: 750,
-    minWidth: 500,
-    minHeight: 600,
-    title: 'SF2GH Migrator',
-    icon: path.join(__dirname, '..', 'public', 'icons', 'icon-512.png'),
-    backgroundColor: '#0d1117',
+    width: 420,
+    height: 700,
+    minWidth: 320,
+    minHeight: 500,
+    title: 'SuperQAT',
+    backgroundColor: '#fafafa',
     webPreferences: {
-      preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
       nodeIntegration: false,
     },
   });
 
-  // Start the Express server then load the app, trying next port if in use
-  tryListen(PREFERRED_PORT, 1).then(({ srv, port }) => {
-    expressServer = srv;
-    mainWindow.loadURL(`http://localhost:${port}`);
-  }).catch((err) => {
-    const { dialog } = require('electron');
-    dialog.showErrorBox('Server Error', `Could not start server: ${err.message}`);
-    app.quit();
-  });
+  mainWindow.loadURL(`http://localhost:${port}/taskpane.html`);
 
-  // Open external links in the default browser
   mainWindow.webContents.setWindowOpenHandler(({ url }) => {
     if (url.startsWith('https://') || url.startsWith('http://')) {
       shell.openExternal(url);
@@ -61,20 +87,24 @@ function createWindow() {
 
   mainWindow.on('closed', () => {
     mainWindow = null;
-    if (expressServer) expressServer.close();
+    if (serverProcess) serverProcess.close();
   });
 }
 
-app.whenReady().then(createWindow);
+app.whenReady().then(() => {
+  startStaticServer().then(createWindow).catch((err) => {
+    const { dialog } = require('electron');
+    dialog.showErrorBox('Server Error', `Could not start server: ${err.message}`);
+    app.quit();
+  });
+});
 
 app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') {
-    app.quit();
-  }
+  if (process.platform !== 'darwin') app.quit();
 });
 
 app.on('activate', () => {
   if (BrowserWindow.getAllWindows().length === 0) {
-    createWindow();
+    startStaticServer().then(createWindow);
   }
 });
