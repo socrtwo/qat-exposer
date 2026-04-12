@@ -10,13 +10,11 @@ scriptDir = fso.GetParentFolderName(WScript.ScriptFullName)
 outFile   = fso.BuildPath(scriptDir, "SuperQAT.dot")
 
 ' List of VBA modules to import
-Dim modules(5)
+Dim modules(3)
 modules(0) = "QATData1.bas"
 modules(1) = "QATData2.bas"
 modules(2) = "QATData3.bas"
-modules(3) = "QATData4.bas"
-modules(4) = "QATData5.bas"
-modules(5) = "QATMain.bas"
+modules(3) = "QATMain.bas"
 
 ' Verify all modules exist
 Dim i, modPath
