@@ -1,19 +1,32 @@
-' build.vbs — Assembles SuperQAT.dotm from QATModule.bas
+' build.vbs — Assembles SuperQAT.dot from VBA modules
 ' Usage: cscript build.vbs
 ' Prerequisites: Microsoft Word installed, VBA project access enabled.
 
 Option Explicit
 
-Dim fso, scriptDir, basFile, outFile
+Dim fso, scriptDir, outFile
 Set fso = CreateObject("Scripting.FileSystemObject")
 scriptDir = fso.GetParentFolderName(WScript.ScriptFullName)
-basFile   = fso.BuildPath(scriptDir, "QATModule.bas")
-outFile   = fso.BuildPath(scriptDir, "SuperQAT.dotm")
+outFile   = fso.BuildPath(scriptDir, "SuperQAT.dot")
 
-If Not fso.FileExists(basFile) Then
-    WScript.Echo "ERROR: QATModule.bas not found in " & scriptDir
-    WScript.Quit 1
-End If
+' List of VBA modules to import
+Dim modules(5)
+modules(0) = "QATData1.bas"
+modules(1) = "QATData2.bas"
+modules(2) = "QATData3.bas"
+modules(3) = "QATData4.bas"
+modules(4) = "QATData5.bas"
+modules(5) = "QATMain.bas"
+
+' Verify all modules exist
+Dim i, modPath
+For i = 0 To UBound(modules)
+    modPath = fso.BuildPath(scriptDir, modules(i))
+    If Not fso.FileExists(modPath) Then
+        WScript.Echo "ERROR: " & modules(i) & " not found in " & scriptDir
+        WScript.Quit 1
+    End If
+Next
 
 ' Delete old output
 If fso.FileExists(outFile) Then fso.DeleteFile outFile, True
@@ -28,33 +41,38 @@ Dim doc
 WScript.Echo "Creating new document..."
 Set doc = word.Documents.Add()
 
-WScript.Echo "Importing VBA module..."
+WScript.Echo "Importing VBA modules..."
 On Error Resume Next
-doc.VBProject.VBComponents.Import basFile
-If Err.Number <> 0 Then
-    WScript.Echo ""
-    WScript.Echo "ERROR: Could not import VBA code. (Error " & Err.Number & ": " & Err.Description & ")"
-    WScript.Echo ""
-    WScript.Echo "Enable VBA project access in Word:"
-    WScript.Echo "  File > Options > Trust Center > Trust Center Settings > Macro Settings"
-    WScript.Echo "  Check: 'Trust access to the VBA project object model'"
-    doc.Close 0
-    word.Quit 0
-    WScript.Quit 1
-End If
+For i = 0 To UBound(modules)
+    modPath = fso.BuildPath(scriptDir, modules(i))
+    doc.VBProject.VBComponents.Import modPath
+    If Err.Number <> 0 Then
+        WScript.Echo "ERROR importing " & modules(i) & ": " & Err.Description
+        WScript.Echo ""
+        WScript.Echo "Enable VBA project access in Word:"
+        WScript.Echo "  File > Options > Trust Center > Trust Center Settings > Macro Settings"
+        WScript.Echo "  Check: 'Trust access to the VBA project object model'"
+        doc.Close 0
+        word.Quit 0
+        WScript.Quit 1
+    End If
+    WScript.Echo "  Imported " & modules(i)
+Next
 On Error GoTo 0
 
-Const wdFormatXMLTemplateMacroEnabled = 13
+' Save as Word 97-2003 Template (.dot) — format 1 = wdFormatTemplate
+' This avoids the OOXML content-type bug with .dotm files
+Const wdFormatTemplate = 1
 
 WScript.Echo "Saving as " & outFile & " ..."
-doc.SaveAs outFile, wdFormatXMLTemplateMacroEnabled
-doc.Close 0  ' wdDoNotSaveChanges
+doc.SaveAs outFile, wdFormatTemplate
+doc.Close 0
 
 WScript.Echo ""
-WScript.Echo "SUCCESS: SuperQAT.dotm created!"
+WScript.Echo "SUCCESS: SuperQAT.dot created!"
 WScript.Echo ""
 WScript.Echo "To install:"
-WScript.Echo "  1. Double-click SuperQAT.dotm, or"
+WScript.Echo "  1. Double-click SuperQAT.dot, or"
 
 Dim wsh
 Set wsh = CreateObject("WScript.Shell")
