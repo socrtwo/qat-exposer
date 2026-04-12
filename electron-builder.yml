@@ -12,17 +12,18 @@ mac:
   category: public.app-category.productivity
   target:
     - dmg
-  icon: src/assets/icon-128.png
+    - zip
+  icon: src/assets/icon-256.png
 dmg:
   title: SuperQAT
 win:
   target:
     - nsis
-  icon: src/assets/icon-128.png
+  icon: src/assets/icon.ico
 nsis:
   oneClick: false
   allowToChangeInstallationDirectory: true
-  installerIcon: src/assets/icon-128.png
-  uninstallerIcon: src/assets/icon-128.png
+  installerIcon: src/assets/icon.ico
+  uninstallerIcon: src/assets/icon.ico
   menuCategory: SuperQAT
   shortcutName: SuperQAT
