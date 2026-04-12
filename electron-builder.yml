@@ -13,7 +13,7 @@ mac:
   target:
     - dmg
     - zip
-  icon: src/assets/icon-256.png
+  icon: src/assets/icon-512.png
 dmg:
   title: SuperQAT
 win:
