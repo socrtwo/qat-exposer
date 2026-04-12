@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SuperQAT — All Word QAT Commands in One Dropdown</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, sans-serif;
+            color: #333; background: #fafafa; line-height: 1.6;
+        }
+        a { color: #0078d4; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+
+        .hero {
+            background: linear-gradient(135deg, #0078d4, #005a9e);
+            color: #fff; text-align: center; padding: 60px 20px;
+        }
+        .hero h1 { font-size: 42px; font-weight: 700; margin-bottom: 12px; }
+        .hero p { font-size: 20px; opacity: 0.9; max-width: 600px; margin: 0 auto; }
+
+        .container { max-width: 800px; margin: 0 auto; padding: 0 20px; }
+
+        .downloads {
+            background: #fff; padding: 40px 20px; border-bottom: 1px solid #e0e0e0;
+        }
+        .downloads h2 {
+            text-align: center; font-size: 28px; color: #0078d4; margin-bottom: 30px;
+        }
+        .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; max-width: 800px; margin: 0 auto; }
+        .card {
+            background: #fafafa; border: 1px solid #e0e0e0; border-radius: 8px;
+            padding: 24px; text-align: center;
+        }
+        .card h3 { font-size: 18px; margin-bottom: 8px; }
+        .card p { font-size: 13px; color: #666; margin-bottom: 16px; min-height: 40px; }
+        .btn {
+            display: inline-block; padding: 10px 24px; background: #0078d4; color: #fff;
+            border-radius: 6px; font-size: 14px; font-weight: 600;
+            transition: background 0.15s;
+        }
+        .btn:hover { background: #006cbe; text-decoration: none; }
+        .btn-outline {
+            background: #fff; color: #0078d4; border: 2px solid #0078d4;
+        }
+        .btn-outline:hover { background: #f0f7ff; }
+
+        .instructions { padding: 40px 20px; }
+        .instructions h2 {
+            text-align: center; font-size: 28px; color: #0078d4; margin-bottom: 30px;
+        }
+        .step { margin-bottom: 30px; }
+        .step h3 { font-size: 18px; margin-bottom: 8px; color: #005a9e; }
+        .step ol { padding-left: 24px; }
+        .step li { margin-bottom: 6px; }
+        .step code {
+            background: #f0f0f0; padding: 2px 6px; border-radius: 3px;
+            font-family: "Cascadia Code", "Consolas", monospace; font-size: 13px;
+        }
+
+        footer {
+            background: #333; color: #aaa; text-align: center;
+            padding: 20px; font-size: 13px;
+        }
+        footer a { color: #7ec8f0; }
+
+        @media (max-width: 600px) {
+            .hero h1 { font-size: 28px; }
+            .hero p { font-size: 16px; }
+            .cards { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="hero">
+    <h1>SuperQAT</h1>
+    <p>All 1,067 Quick Access Toolbar commands in a single searchable dropdown for Microsoft Word.</p>
+</div>
+
+<section class="downloads">
+    <div class="container">
+        <h2>Download</h2>
+        <div class="cards">
+            <div class="card">
+                <h3>Windows</h3>
+                <p>Standalone installer. Runs alongside Word as its own app.</p>
+                <a class="btn" href="https://github.com/socrtwo/qat-exposer/releases/latest/download/SuperQAT.Setup.2.0.0.exe">
+                    Download .exe
+                </a>
+            </div>
+            <div class="card">
+                <h3>Mac</h3>
+                <p>Drag-to-install disk image for macOS (Apple Silicon).</p>
+                <a class="btn" href="https://github.com/socrtwo/qat-exposer/releases/latest/download/SuperQAT-2.0.0-arm64.dmg">
+                    Download .dmg
+                </a>
+            </div>
+            <div class="card">
+                <h3>Word Add-in</h3>
+                <p>VBA template that adds a dropdown directly inside Word's ribbon. Works on Windows &amp; Mac.</p>
+                <a class="btn" href="https://github.com/socrtwo/qat-exposer/releases/latest/download/SuperQAT.dot">
+                    Download .dot
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="instructions">
+    <div class="container">
+        <h2>How to Install</h2>
+
+        <div class="step">
+            <h3>Windows Installer (.exe)</h3>
+            <ol>
+                <li>Download and run <strong>SuperQAT Setup</strong></li>
+                <li>Follow the installer prompts</li>
+                <li>Open SuperQAT from the Start Menu — it runs alongside Word</li>
+            </ol>
+        </div>
+
+        <div class="step">
+            <h3>Mac Installer (.dmg)</h3>
+            <ol>
+                <li>Open the downloaded <strong>.dmg</strong> file</li>
+                <li>Drag <strong>SuperQAT</strong> to your Applications folder</li>
+                <li>Open it from Applications — it runs alongside Word</li>
+            </ol>
+        </div>
+
+        <div class="step">
+            <h3>Word Add-in (.dot) — Adds Dropdown to Word's Ribbon</h3>
+            <ol>
+                <li>Download <strong>SuperQAT.dot</strong></li>
+                <li><strong>Windows:</strong> Press Win+R, paste <code>%APPDATA%\Microsoft\Word\STARTUP</code> and hit Enter. Drop the file there.</li>
+                <li><strong>Mac:</strong> In Finder, press Cmd+Shift+G, paste <code>~/Library/Group Containers/UBF8T346G9.Office/User Content/Startup/Word/</code> and drop the file there.</li>
+                <li>Restart Word</li>
+                <li>Click the <strong>Add-ins</strong> tab — you'll see the <strong>QAT Command</strong> dropdown with all 1,067 commands</li>
+            </ol>
+        </div>
+    </div>
+</section>
+
+<footer>
+    <p>
+        SuperQAT is open source.
+        <a href="https://github.com/socrtwo/qat-exposer">View on GitHub</a>
+    </p>
+</footer>
+
+</body>
+</html>
