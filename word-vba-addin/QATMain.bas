@@ -6,7 +6,7 @@ Attribute VB_Name = "QATMain"
 Option Explicit
 
 Private Const BAR_NAME As String = "SuperQAT"
-Private Const CMD_COUNT As Long = 1884
+Private Const CMD_COUNT As Long = 1067
 
 Private cmdIDs() As Long
 Private cmdCaptions() As String
@@ -17,8 +17,6 @@ Private Sub LoadCommands()
     LoadChunk1 cmdIDs, cmdCaptions
     LoadChunk2 cmdIDs, cmdCaptions
     LoadChunk3 cmdIDs, cmdCaptions
-    LoadChunk4 cmdIDs, cmdCaptions
-    LoadChunk5 cmdIDs, cmdCaptions
 End Sub
 
 Public Sub AutoExec()
@@ -69,17 +67,44 @@ Public Sub RunSelectedCommand()
     Dim targetID As Long
     targetID = cmdIDs(idx)
 
+    ' Strategy 1: Find an existing CommandBar control and execute it
     Dim ctrl As Office.CommandBarControl
     Set ctrl = Application.CommandBars.FindControl(ID:=targetID)
 
-    If ctrl Is Nothing Then
-        MsgBox "Command " & Chr(39) & cmdCaptions(idx) & Chr(39) & " (ID " & targetID & ") is not available.", vbInformation, "SuperQAT"
+    If Not ctrl Is Nothing Then
+        ctrl.Execute
         Exit Sub
     End If
 
-    ctrl.Execute
+    ' Strategy 2: Create a temporary control by ID, execute, then delete.
+    ' Many commands exist as valid IDs but have no loaded CommandBar control
+    ' in modern Word. Adding one by ID instantiates it so we can run it.
+    Dim tmpBar As Office.CommandBar
+    Dim tmpCtrl As Office.CommandBarControl
+
+    On Error Resume Next
+    Set tmpBar = Application.CommandBars.Add("SuperQAT_Tmp", msoBarPopup, , True)
+    Set tmpCtrl = tmpBar.Controls.Add(ID:=targetID)
+    On Error GoTo ErrHandler
+
+    If tmpCtrl Is Nothing Then
+        On Error Resume Next
+        tmpBar.Delete
+        On Error GoTo 0
+        MsgBox "Command " & Chr(39) & cmdCaptions(idx) & Chr(39) & " (ID " & targetID & ") is not available in this version of Word.", vbInformation, "SuperQAT"
+        Exit Sub
+    End If
+
+    tmpCtrl.Execute
+
+    On Error Resume Next
+    tmpBar.Delete
+    On Error GoTo 0
     Exit Sub
 
 ErrHandler:
+    On Error Resume Next
+    If Not tmpBar Is Nothing Then tmpBar.Delete
+    On Error GoTo 0
     MsgBox "Could not run " & Chr(39) & cmdCaptions(idx) & Chr(39) & ": " & Err.Description, vbExclamation, "SuperQAT"
 End Sub
