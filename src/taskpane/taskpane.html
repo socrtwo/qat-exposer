@@ -3,21 +3,32 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quick Access Toolbar</title>
+    <title>SuperQAT</title>
     <script src="https://appsforoffice.microsoft.com/lib/1/hosted/office.js"></script>
     <link rel="stylesheet" href="taskpane.css">
 </head>
 <body>
     <div id="app">
         <header>
-            <h1>Quick Access</h1>
+            <h1>SuperQAT</h1>
+            <span id="cmd-count" class="badge"></span>
         </header>
 
-        <select id="command-list" size="20">
-            <option value="" disabled selected>Loading commands...</option>
+        <input type="text" id="search" placeholder="Search commands..." autocomplete="off" spellcheck="false">
+
+        <div class="filter-row">
+            <select id="tab-filter">
+                <option value="">All Categories</option>
+            </select>
+        </div>
+
+        <select id="command-list" size="20" multiple>
+            <option value="" disabled>Loading commands...</option>
         </select>
 
         <button id="run-btn">Run</button>
+
+        <div id="cmd-info" class="cmd-info"></div>
     </div>
 
     <script src="taskpane.js"></script>

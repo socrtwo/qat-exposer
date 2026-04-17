@@ -12,22 +12,73 @@ body {
 }
 
 #app {
-  padding: 12px;
+  padding: 10px;
   display: flex;
   flex-direction: column;
   height: 100vh;
 }
 
 header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   margin-bottom: 8px;
   padding-bottom: 6px;
   border-bottom: 2px solid #0078d4;
 }
 
 header h1 {
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 600;
   color: #0078d4;
+}
+
+.badge {
+  font-size: 10px;
+  background: #0078d4;
+  color: #fff;
+  padding: 1px 6px;
+  border-radius: 10px;
+  font-weight: 600;
+}
+
+#search {
+  width: 100%;
+  padding: 6px 8px;
+  font-size: 12px;
+  font-family: inherit;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background: #fff;
+  margin-bottom: 4px;
+}
+
+#search:focus {
+  outline: none;
+  border-color: #0078d4;
+  box-shadow: 0 0 0 1px #0078d4;
+}
+
+.filter-row {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 4px;
+}
+
+.filter-row select {
+  flex: 1;
+  padding: 4px 6px;
+  font-size: 11px;
+  font-family: inherit;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background: #fff;
+  cursor: pointer;
+}
+
+.filter-row select:focus {
+  outline: none;
+  border-color: #0078d4;
 }
 
 #command-list {
@@ -50,6 +101,9 @@ header h1 {
 
 #command-list option {
   padding: 3px 6px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 #command-list option:checked {
@@ -78,6 +132,14 @@ header h1 {
 
 #run-btn:active {
   background: #005a9e;
+}
+
+.cmd-info {
+  margin-top: 4px;
+  font-size: 10px;
+  color: #666;
+  min-height: 14px;
+  flex-shrink: 0;
 }
 
 .toast {
