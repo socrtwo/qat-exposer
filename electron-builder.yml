@@ -1,5 +1,6 @@
 appId: com.superqat.addin
 productName: SuperQAT
+icon: src/assets/icon-256.png
 directories:
   output: release
 files:
