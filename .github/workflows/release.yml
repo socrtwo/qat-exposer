@@ -71,45 +71,9 @@ jobs:
           name: mac-installer
           path: release/*.dmg
 
-  # ── COM Add-ins (.dotm, .xlam, .ppam) ────────────────────────────
-  build-com-addins:
-    runs-on: windows-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Enable VBA project access in registry
-        shell: powershell
-        run: |
-          # Word 16.0
-          $wordKey = "HKCU:\Software\Microsoft\Office\16.0\Word\Security"
-          if (-not (Test-Path $wordKey)) { New-Item -Path $wordKey -Force | Out-Null }
-          Set-ItemProperty -Path $wordKey -Name "AccessVBOM" -Value 1 -Type DWord
-          # Excel 16.0
-          $excelKey = "HKCU:\Software\Microsoft\Office\16.0\Excel\Security"
-          if (-not (Test-Path $excelKey)) { New-Item -Path $excelKey -Force | Out-Null }
-          Set-ItemProperty -Path $excelKey -Name "AccessVBOM" -Value 1 -Type DWord
-          # PowerPoint 16.0
-          $pptKey = "HKCU:\Software\Microsoft\Office\16.0\PowerPoint\Security"
-          if (-not (Test-Path $pptKey)) { New-Item -Path $pptKey -Force | Out-Null }
-          Set-ItemProperty -Path $pptKey -Name "AccessVBOM" -Value 1 -Type DWord
-
-      - name: Build COM add-ins
-        shell: powershell
-        run: |
-          cd com-addin
-          .\build-all.ps1
-        continue-on-error: true
-
-      - uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: com-addins
-          path: com-addin/build/*
-          if-no-files-found: warn
-
   # ── Create GitHub Release with all artifacts ──────────────────────
   release:
-    needs: [build-web, build-windows, build-mac, build-com-addins]
+    needs: [build-web, build-windows, build-mac]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -129,32 +93,15 @@ jobs:
           name: mac-installer
           path: mac/
 
-      - uses: actions/download-artifact@v4
-        with:
-          name: com-addins
-          path: com-addins/
-        continue-on-error: true
-
-      # Zip the web dist for download
       - name: Package web release
         run: |
           cd web-dist
           zip -r ../SuperQAT-web.zip .
-          cd ..
 
-      # Zip the manifests for easy sideloading
       - name: Package manifests
         run: zip -r SuperQAT-manifests.zip manifests/
 
-      # Zip the COM add-ins
-      - name: Package COM add-ins
-        run: |
-          if [ -d "com-addins" ] && [ "$(ls -A com-addins 2>/dev/null)" ]; then
-            zip -r SuperQAT-COM-addins.zip com-addins/
-          fi
-
-      # Zip the VBA source (always available, even if COM build fails)
-      - name: Package VBA source
+      - name: Package VBA COM add-ins source
         run: zip -r SuperQAT-VBA-source.zip com-addin/ -x "com-addin/build/*"
 
       - name: Create Release
@@ -166,5 +113,4 @@ jobs:
             mac/*.dmg
             SuperQAT-web.zip
             SuperQAT-manifests.zip
-            SuperQAT-COM-addins.zip
             SuperQAT-VBA-source.zip
