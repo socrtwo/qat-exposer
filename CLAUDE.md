@@ -13,3 +13,8 @@ SuperQAT — an Office Add-in (Web + COM/VBA) that exposes all 2,199 Office 365 
 - After all work is done, push `main` to the remote.
 - Do NOT leave changes only on a feature branch — `main` must always have the latest code.
 - Steps: commit on feature branch → merge feature branch into main → push main → push feature branch.
+
+## README.md
+- Update README.md every time a release is prepared or significant changes are made.
+- Keep the command count, platform support table, project structure, and download links accurate.
+- If the version number changes, update it in README.md too.
