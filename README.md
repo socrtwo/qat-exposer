@@ -1,5 +1,10 @@
 # SuperQAT — Office Quick Access Toolbar Add-in
 
+<!--PAGES_LINK_BANNER-->
+> 🌐 **Live page:** [https://socrtwo.github.io/qat-exposer/](https://socrtwo.github.io/qat-exposer/)  
+> 📦 **Releases:** [github.com/socrtwo/qat-exposer/releases](https://github.com/socrtwo/qat-exposer/releases)
+<!--/PAGES_LINK_BANNER-->
+
 An Office Add-in for **Word**, **Excel**, and **PowerPoint** that puts **all 2,199 Office 365 commands** into a single searchable dropdown. Pick any command, click Run, and it executes on your current content.
 
 ## Download
