@@ -71,9 +71,144 @@ jobs:
           name: mac-installer
           path: release/*.dmg
 
+  # ── Linux .AppImage + .deb (electron, mirrors win/mac legs) ───────
+  build-linux:
+    needs: build-web
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - uses: actions/download-artifact@v4
+        with:
+          name: web-dist
+          path: dist/
+      - run: npx electron-builder --linux
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: linux-installer
+          path: |
+            release/*.AppImage
+            release/*.deb
+
+  # ── Android debug APK (Capacitor wraps the web add-in) ────────────
+  build-android:
+    needs: build-web
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+      - uses: android-actions/setup-android@v3
+      - run: npm ci
+      - uses: actions/download-artifact@v4
+        with:
+          name: web-dist
+          path: dist/
+      # @capacitor/android is version-pinned to match @capacitor/core (^7)
+      - run: npm install @capacitor/android@^7 --no-save
+      - name: Add + sync Capacitor Android
+        run: |
+          npx cap add android 2>/dev/null || true
+          npx cap sync android
+      - name: Build debug APK
+        working-directory: android
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleDebug
+      - name: Stage APK
+        run: |
+          mkdir -p android-out
+          find android/app/build/outputs -name '*.apk' -type f -exec cp {} android-out/SuperQAT-android.apk \;
+          ls -la android-out/
+      - uses: actions/upload-artifact@v4
+        with:
+          name: android-apk
+          path: android-out/*.apk
+
+  # ── ChromeOS (installable PWA bundle of the web add-in) ───────────
+  build-chromeos:
+    needs: build-web
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: web-dist
+          path: dist/
+      - name: Package ChromeOS bundle
+        run: |
+          rm -rf _chromeos && mkdir -p _chromeos/app
+          cp -r dist/. _chromeos/app/
+          {
+            echo "SuperQAT - ChromeOS"
+            echo ""
+            echo "ChromeOS treats PWAs as first-class apps; no APK or extension needed."
+            echo ""
+            echo "Install (recommended): open the hosted SuperQAT web add-in in Chrome"
+            echo "and use the address-bar install icon (or menu -> Install) so it appears"
+            echo "in your launcher."
+            echo ""
+            echo "Office use: SuperQAT is also an Office Add-in. Sideload manifests/"
+            echo "into Office on the Web (Add-ins -> Upload My Add-in)."
+            echo ""
+            echo "Play-Store Chromebooks can alternatively sideload the Android APK"
+            echo "from this same release."
+          } > _chromeos/INSTALL-CHROMEOS.txt
+          ( cd _chromeos && zip -r ../SuperQAT-chromeos.zip . )
+      - uses: actions/upload-artifact@v4
+        with:
+          name: chromeos-bundle
+          path: SuperQAT-chromeos.zip
+
+  # ── iOS (installable PWA bundle; native .ipa needs Apple cert) ────
+  build-ios:
+    needs: build-web
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: web-dist
+          path: dist/
+      - name: Package iOS PWA bundle
+        run: |
+          rm -rf _ios && mkdir -p _ios/app
+          cp -r dist/. _ios/app/
+          {
+            echo "SuperQAT - iOS / iPadOS"
+            echo ""
+            echo "Install as a web app (no App Store or Apple Developer account needed):"
+            echo "  1. Open the hosted SuperQAT add-in in Safari on your iPhone/iPad."
+            echo "  2. Tap Share -> Add to Home Screen."
+            echo ""
+            echo "Office use: sideload manifests/ via Office on the Web; the add-in then"
+            echo "follows your Microsoft 365 account into the Office iOS apps."
+            echo ""
+            echo "A native .ipa can be produced via Capacitor + Xcode with an Apple"
+            echo "Developer certificate (cap add ios)."
+          } > _ios/INSTALL-IOS.txt
+          ( cd _ios && zip -r ../SuperQAT-ios.zip . )
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ios-bundle
+          path: SuperQAT-ios.zip
+
   # ── Create GitHub Release with all artifacts ──────────────────────
   release:
-    needs: [build-web, build-windows, build-mac]
+    needs: [build-web, build-windows, build-mac, build-linux, build-android, build-chromeos, build-ios]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -93,6 +228,27 @@ jobs:
           name: mac-installer
           path: mac/
 
+      - uses: actions/download-artifact@v4
+        with:
+          name: linux-installer
+          path: linux/
+
+      - uses: actions/download-artifact@v4
+        continue-on-error: true
+        with:
+          name: android-apk
+          path: android/
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: chromeos-bundle
+          path: chromeos/
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: ios-bundle
+          path: ios/
+
       - name: Package web release
         run: |
           cd web-dist
@@ -111,6 +267,11 @@ jobs:
           files: |
             windows/*.exe
             mac/*.dmg
+            linux/*.AppImage
+            linux/*.deb
+            android/*.apk
+            chromeos/SuperQAT-chromeos.zip
+            ios/SuperQAT-ios.zip
             SuperQAT-web.zip
             SuperQAT-manifests.zip
             SuperQAT-VBA-source.zip

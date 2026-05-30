@@ -17,6 +17,12 @@ mac:
   icon: src/assets/icon-512.png
 dmg:
   title: SuperQAT
+linux:
+  category: Office
+  target:
+    - AppImage
+    - deb
+  icon: src/assets/icon-256.png
 win:
   target:
     - nsis
