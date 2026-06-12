@@ -4,6 +4,11 @@ on:
   push:
     tags:
       - 'v*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Release tag to create/publish (e.g. v3.0.3). Created server-side at the dispatched ref.'
+        required: true
 
 permissions:
   contents: write
@@ -255,8 +260,10 @@ jobs:
           cd pkg/ios && zip -r ../../SuperQAT-ios.zip .
 
       - name: Create Release
+        if: startsWith(github.ref, 'refs/tags/v') || (github.event_name == 'workflow_dispatch' && inputs.tag != '')
         uses: softprops/action-gh-release@v2
         with:
+          tag_name: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref_name }}
           generate_release_notes: true
           files: |
             windows/*.exe
