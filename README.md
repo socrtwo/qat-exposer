@@ -18,6 +18,10 @@ Grab the latest release from [GitHub Releases](https://github.com/socrtwo/qat-ex
 | **SuperQAT-web.zip** | Web add-in (host on any HTTPS server) |
 | **SuperQAT-manifests.zip** | Office manifests for sideloading |
 | **SuperQAT-VBA-source.zip** | VBA source for COM add-ins (Word .dotm, Excel .xlam, PowerPoint .ppam) |
+| **SuperQAT-linux.zip** | Manifests + Linux install guide (sideload into Office on the web) |
+| **SuperQAT-chromeos.zip** | Manifests + ChromeOS install guide (sideload into Office on the web) |
+| **SuperQAT-android.zip** | Manifests + Android install guide (deploy via Microsoft 365 Admin Center) |
+| **SuperQAT-ios.zip** | Manifests + iOS install guide (deploy via Microsoft 365 Admin Center) |
 
 ## What it does
 
@@ -42,8 +46,10 @@ Opens a task pane with a **search box**, **category filter**, and a scrollable l
 |----------|-----------|------------|
 | **Windows desktop** | ✓ Electron .exe or sideload | ✓ .dotm / .xlam / .ppam |
 | **Mac desktop** | ✓ Electron .dmg or sideload | ✓ .dotm / .xlam / .ppam |
+| **Linux** | ✓ Office on the web — sideload manifest (`SuperQAT-linux.zip`) | ✗ Not supported |
+| **ChromeOS** | ✓ Office on the web — sideload manifest (`SuperQAT-chromeos.zip`) | ✗ Not supported |
 | **Office on the Web** | ✓ Sideload manifest | ✗ Not supported |
-| **iOS / Android** | ✓ Capacitor wrapper | ✗ Not supported |
+| **iOS / Android** | ✓ Microsoft 365 Admin Center deployment or Office on the web (`SuperQAT-ios.zip` / `SuperQAT-android.zip`); Capacitor wrapper | ✗ Not supported |
 
 ## Quick start
 

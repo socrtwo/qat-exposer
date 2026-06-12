@@ -104,6 +104,156 @@ jobs:
       - name: Package VBA COM add-ins source
         run: zip -r SuperQAT-VBA-source.zip com-addin/ -x "com-addin/build/*"
 
+      # Linux: no desktop Office exists - sideload into Office on the web.
+      - name: Package Linux zip (manifests + web sideload instructions)
+        run: |
+          mkdir -p pkg/linux
+          cp manifests/*.xml pkg/linux/
+          printf '%s\n' \
+            '# SuperQAT on Linux' \
+            '' \
+            '> **Desktop Microsoft Office does not exist on Linux**, so there is no' \
+            '> executable installer. The supported way to use SuperQAT on Linux is' \
+            '> **Office on the web** (https://www.office.com) - sideload one of the' \
+            '> included add-in manifests and it follows your Microsoft account.' \
+            '' \
+            '## Install via Office on the web' \
+            '' \
+            '1. In any Linux browser, sign in at https://www.office.com and open' \
+            '   Word, Excel, or PowerPoint for the web.' \
+            '2. Open or create a document.' \
+            '3. Choose **Insert > Add-ins** (on some tenants: **Home > Add-ins**),' \
+            '   then click **More Add-ins**.' \
+            '4. Switch to the **My Add-ins** tab and choose **Manage My Add-ins >' \
+            '   Upload My Add-in**.' \
+            '5. Upload the manifest for the app you are using from this archive:' \
+            '   `word-manifest.xml`, `excel-manifest.xml`, or' \
+            '   `powerpoint-manifest.xml`.' \
+            '6. The **SuperQAT** task pane button appears on the ribbon. The add-in' \
+            '   stays installed for your account across browsers and devices.' \
+            '' \
+            '## Org-wide install (Microsoft 365 admins)' \
+            '' \
+            'Use Microsoft 365 Admin Center > **Settings > Integrated apps > Upload' \
+            'custom apps** and upload the manifests from this archive.' \
+            > pkg/linux/INSTALL.md
+          cd pkg/linux && zip -r ../../SuperQAT-linux.zip .
+
+      # ChromeOS: no desktop Office - sideload into Office on the web in Chrome.
+      - name: Package ChromeOS zip (manifests + web sideload instructions)
+        run: |
+          mkdir -p pkg/chromeos
+          cp manifests/*.xml pkg/chromeos/
+          printf '%s\n' \
+            '# SuperQAT on ChromeOS' \
+            '' \
+            '> **There is no desktop Microsoft Office for ChromeOS**, so there is no' \
+            '> executable installer. On a Chromebook the supported way to use' \
+            '> SuperQAT is **Office on the web** (https://www.office.com) in the' \
+            '> Chrome browser - sideload one of the included add-in manifests and it' \
+            '> follows your Microsoft account.' \
+            '' \
+            '## Install via Office on the web (Chrome browser)' \
+            '' \
+            '1. On your Chromebook, open Chrome, sign in at https://www.office.com,' \
+            '   and open Word, Excel, or PowerPoint for the web.' \
+            '2. Open or create a document.' \
+            '3. Choose **Insert > Add-ins** (on some tenants: **Home > Add-ins**),' \
+            '   then click **More Add-ins**.' \
+            '4. Switch to the **My Add-ins** tab and choose **Manage My Add-ins >' \
+            '   Upload My Add-in**.' \
+            '5. Upload the manifest for the app you are using from this archive' \
+            '   (use the ChromeOS Files app picker): `word-manifest.xml`,' \
+            '   `excel-manifest.xml`, or `powerpoint-manifest.xml`.' \
+            '6. The **SuperQAT** task pane button appears on the ribbon. The add-in' \
+            '   stays installed for your account across devices.' \
+            '' \
+            '## Org-wide install (Microsoft 365 admins)' \
+            '' \
+            'Use Microsoft 365 Admin Center > **Settings > Integrated apps > Upload' \
+            'custom apps** and upload the manifests from this archive.' \
+            > pkg/chromeos/INSTALL.md
+          cd pkg/chromeos && zip -r ../../SuperQAT-chromeos.zip .
+
+      # Android: add-ins reach Office mobile apps via Centralized Deployment.
+      - name: Package Android zip (manifests + Admin Center instructions)
+        run: |
+          mkdir -p pkg/android
+          cp manifests/*.xml pkg/android/
+          printf '%s\n' \
+            '# SuperQAT on Android' \
+            '' \
+            '> **There is no installable executable for Office Add-ins on Android.**' \
+            '> The Office mobile apps cannot load a manifest from local storage.' \
+            '> SuperQAT reaches an Android device through a Microsoft 365 account' \
+            '> that already trusts it, or through Office on the web in the browser.' \
+            '' \
+            '## Option 1 - Deploy via Microsoft 365 Admin Center' \
+            '' \
+            'Anyone with the **Global Admin** or **Exchange Admin** role on a' \
+            'Microsoft 365 tenant can deploy SuperQAT to all users (including' \
+            'Android):' \
+            '' \
+            '1. Sign in to https://admin.microsoft.com.' \
+            '2. In the left nav, choose **Settings > Integrated apps**.' \
+            '3. Click **Upload custom apps**.' \
+            '4. Select **Office Add-in**, then **Upload manifest file (.xml)** and' \
+            '   upload the manifests from this archive (`word-manifest.xml`,' \
+            '   `excel-manifest.xml`, `powerpoint-manifest.xml`).' \
+            '5. Pick the users / groups who should receive the add-in. Android' \
+            '   users in scope will see SuperQAT automatically (allow ~24 hours).' \
+            '' \
+            'Reference: https://learn.microsoft.com/microsoft-365/admin/manage/test-and-deploy-microsoft-365-apps' \
+            '' \
+            '## Option 2 - Use Office on the web in the browser' \
+            '' \
+            'Open https://www.office.com in the Android browser (request the' \
+            'desktop site), then sideload a manifest via **Insert > Add-ins >' \
+            'Upload My Add-in**. The add-in stays associated with your account.' \
+            > pkg/android/INSTALL.md
+          cd pkg/android && zip -r ../../SuperQAT-android.zip .
+
+      # iOS: same story as Android - Centralized Deployment or Office web.
+      - name: Package iOS zip (manifests + Admin Center instructions)
+        run: |
+          mkdir -p pkg/ios
+          cp manifests/*.xml pkg/ios/
+          printf '%s\n' \
+            '# SuperQAT on iOS (iPhone and iPad)' \
+            '' \
+            '> **There is no installable executable for Office Add-ins on iPhone or' \
+            '> iPad.** The iOS app sandbox does not let third parties load a' \
+            '> manifest into the Office apps. SuperQAT reaches an iOS device' \
+            '> through a Microsoft 365 account that already trusts it, or through' \
+            '> Office on the web in the browser.' \
+            '' \
+            '## Option 1 - Deploy via Microsoft 365 Admin Center' \
+            '' \
+            'Anyone with the **Global Admin** or **Exchange Admin** role on a' \
+            'Microsoft 365 tenant can deploy SuperQAT to all users (including' \
+            'iPhone and iPad):' \
+            '' \
+            '1. Sign in to https://admin.microsoft.com.' \
+            '2. In the left nav, choose **Settings > Integrated apps**.' \
+            '3. Click **Upload custom apps**.' \
+            '4. Select **Office Add-in**, then **Upload manifest file (.xml)** and' \
+            '   upload the manifests from this archive (`word-manifest.xml`,' \
+            '   `excel-manifest.xml`, `powerpoint-manifest.xml`).' \
+            '5. Pick the users / groups who should receive the add-in. iPhone and' \
+            '   iPad users in scope will see SuperQAT automatically (allow ~24' \
+            '   hours).' \
+            '' \
+            'Reference: https://learn.microsoft.com/microsoft-365/admin/manage/test-and-deploy-microsoft-365-apps' \
+            '' \
+            '## Option 2 - Use Office on the web in the browser' \
+            '' \
+            'Open https://www.office.com in Safari (request the desktop site if' \
+            'needed), then sideload a manifest via **Insert > Add-ins > Upload My' \
+            'Add-in**. The add-in stays associated with your account, so it also' \
+            'appears in the Add-ins list inside the Office apps on iOS.' \
+            > pkg/ios/INSTALL.md
+          cd pkg/ios && zip -r ../../SuperQAT-ios.zip .
+
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
@@ -114,3 +264,7 @@ jobs:
             SuperQAT-web.zip
             SuperQAT-manifests.zip
             SuperQAT-VBA-source.zip
+            SuperQAT-linux.zip
+            SuperQAT-chromeos.zip
+            SuperQAT-android.zip
+            SuperQAT-ios.zip
