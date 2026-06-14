@@ -129,6 +129,14 @@ git tag v3.0.2
 git push origin v3.0.2
 ```
 
+### Code signing
+
+Windows release `.exe` files are signed with **Azure Trusted Signing** via
+GitHub Actions OIDC (no stored secrets). Signing is skipped gracefully until
+the Azure repo Variables are configured, so unconfigured builds still produce
+unsigned binaries. See [SIGNING.md](SIGNING.md) for one-time setup and
+verification.
+
 ## Hosting modes
 
 ### Local server (development)
